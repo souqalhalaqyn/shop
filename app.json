@@ -41,7 +41,18 @@
       ],
       "expo-localization",
       "expo-image",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0",
+            "kotlinVersion": "1.9.24"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
