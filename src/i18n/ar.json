@@ -1,0 +1,144 @@
+{
+  "application": { "name": "سوق الحلاقين" },
+  "common": {
+    "search": "بحث...",
+    "filters": "تصفية",
+    "close": "إغلاق",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "loading": "جاري التحميل...",
+    "restartRequired": "إعادة تشغيل مطلوبة",
+    "restartMessage": "يرجى إعادة تشغيل التطبيق لتطبيق تغييرات التخطيط",
+    "ok": "حسناً",
+    "categories": "الفئات",
+    "continueAsGuest": "المتابعة كزائر"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "cart": "السلة",
+    "orders": "الطلبات",
+    "bucket": "المحفظة",
+    "ads": "الإعلانات",
+    "shops": "المحلات",
+    "settings": "الإعدادات",
+    "accounts": "الحسابات",
+    "login": "تسجيل الدخول"
+  },
+  "keywords": { "categories": "الفئات" },
+
+  "search": {
+    "relevance": "الأكثر صلة",
+    "priceLow": "السعر: من الأقل إلى الأعلى",
+    "priceHigh": "السعر: من الأعلى إلى الأقل",
+    "name": "الاسم",
+    "noResults": "لا توجد نتائج لـ \"{query}\"",
+    "noResultsSimple": "لا توجد نتائج",
+    "placeholder": "ابحث عن منتجات..."
+  },
+
+  "pages": {
+    "comingSoon": "قريباً...",
+    "shopsSoon": "المحلات قريباً...",
+    "topProducts": "أفضل المنتجات"
+  },
+  "orders": {
+    "title": "طلباتي",
+    "empty": "لا توجد طلبات بعد",
+    "orderId": "طلب",
+    "date": "التاريخ",
+    "total": "المجموع",
+    "status": "الحالة",
+    "items": "المنتجات",
+    "cancel": "إلغاء",
+    "cancelConfirm": "هل أنت متأكد من إلغاء هذا الطلب؟",
+    "cancelled": "ملغي",
+    "cancelSuccess": "تم إلغاء الطلب بنجاح",
+    "product": "المنتج",
+    "qty": "الكمية",
+    "price": "السعر",
+    "pending": "قيد الانتظار",
+    "confirmed": "مؤكد",
+    "processing": "قيد المعالجة",
+    "shipped": "تم الشحن",
+    "delivered": "تم التوصيل",
+    "loginRequired": "سجل الدخول لعرض طلباتك",
+    "placeSuccess": "تم تقديم الطلب بنجاح!",
+    "placeFailed": "فشل تقديم الطلب",
+    "location": "الموقع"
+  },
+  "bucket": {
+    "balance": "الرصيد الحالي",
+    "charge": "اشحن محفظتك",
+    "chargeDescription": "تواصل مع المشرف عبر واتساب لإضافة رصيد إلى محفظتك",
+    "noPhone": "رقم هاتف المشرف غير مضبوط",
+    "loginRequired": "سجل الدخول لعرض رصيدك",
+    "failedWhatsApp": "فشل فتح واتساب",
+    "loginSignup": "تسجيل الدخول / إنشاء حساب"
+  },
+
+  "product": {
+    "price": "السعر",
+    "description": "الوصف",
+    "inStock": "متوفر",
+    "outOfStock": "غير متوفر",
+    "addToCart": "أضف إلى السلة",
+    "relatedProducts": "منتجات مشابهة"
+  },
+  "auth": {
+    "loginTitle": "مرحباً بعودتك",
+    "createAccount": "إنشاء حساب",
+    "enterPhone": "أدخل رقم هاتفك السوري (+963)",
+    "phoneRequired": "الرجاء إدخال رقم الهاتف",
+    "phoneInvalid": "الرجاء إدخال رقم سوري صحيح مكون من 9 أرقام",
+    "passwordPlaceholder": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "passwordRequired": "الرجاء إدخال كلمة المرور",
+    "passwordTooShort": "كلمة المرور يجب أن تكون 6 أحرف على الأقل",
+    "passwordsNotMatch": "كلمتا المرور غير متطابقتين",
+    "login": "تسجيل الدخول",
+    "noAccount": "ليس لديك حساب؟ سجل الآن",
+    "hasAccount": "لديك حساب بالفعل؟ تسجيل الدخول",
+    "loginSignup": "تسجيل الدخول / إنشاء حساب"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "theme": "المظهر",
+    "language": "اللغة",
+    "themeOptions": { "system": "تلقائي", "light": "فاتح", "dark": "داكن" },
+    "logout": "تسجيل خروج",
+    "logoutConfirm": "هل أنت متأكد من تسجيل الخروج؟",
+    "cancel": "إلغاء",
+    "account": "الحساب"
+  },
+  "language": { "english": "English", "arabic": "العربية" },
+
+  "cart": {
+    "empty": "السلة فارغة",
+    "purchase": "شراء",
+    "total": "المجموع",
+    "deliveryAddress": "عنوان التوصيل",
+    "browseLocations": "تصفح المواقع",
+    "orEnterAddress": "أو أدخل عنواناً مخصصاً:",
+    "saveAddress": "احفظ هذا العنوان في ملفي",
+    "saveAddressHint": "أعط هذا العنوان اسماً (مثل: المنزل، العمل...)",
+    "locationNamePlaceholder": "اسم الموقع",
+    "skip": "تخطي",
+    "confirmPurchase": "تأكيد الشراء",
+    "deliveryLocation": "موقع التوصيل",
+    "selectState": "اختر المحافظة",
+    "selectRegion": "اختر المنطقة في {name}",
+    "selectWay": "اختر شركة التوصيل في {name}",
+    "enterAddress": "أدخل عنوان التوصيل في {name}",
+    "confirmAddress": "تأكيد العنوان",
+    "direct": "مباشر",
+    "addressPlaceholder": "الشارع، المبنى، الطابق...",
+    "default": "افتراضي"
+  },
+
+  "categories": {
+    "showMore": "عرض المزيد"
+  }
+}

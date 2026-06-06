@@ -1,0 +1,152 @@
+{
+  "application": { "name": "Barbers Shop" },
+  "common": {
+    "search": "Search...",
+    "filters": "Filters",
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "restartRequired": "Restart Required",
+    "restartMessage": "Please restart the app to apply layout changes",
+    "ok": "OK",
+    "categories": "Categories",
+    "continueAsGuest": "Continue as Guest"
+  },
+
+  "navigation": {
+    "home": "Home",
+    "cart": "Cart",
+    "orders": "Orders",
+    "bucket": "Bucket",
+    "ads": "Ads",
+    "shops": "Shops",
+    "settings": "Settings",
+    "accounts": "Accounts",
+    "login": "Login"
+  },
+
+  "keywords": {
+    "categories": "Categories"
+  },
+
+  "search": {
+    "relevance": "Relevance",
+    "priceLow": "Price: Low to High",
+    "priceHigh": "Price: High to Low",
+    "name": "Name",
+    "noResults": "No results for \"{query}\"",
+    "noResultsSimple": "No results",
+    "placeholder": "Search for products..."
+  },
+
+  "pages": {
+    "comingSoon": "Coming Soon...",
+    "topProducts": "Top Products"
+  },
+
+  "orders": {
+    "title": "My Orders",
+    "empty": "No orders yet",
+    "orderId": "Order",
+    "date": "Date",
+    "total": "Total",
+    "status": "Status",
+    "items": "Items",
+    "cancel": "Cancel",
+    "cancelConfirm": "Are you sure you want to cancel this order?",
+    "cancelled": "Cancelled",
+    "cancelSuccess": "Order cancelled successfully",
+    "product": "Product",
+    "qty": "Qty",
+    "price": "Price",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "processing": "Processing",
+    "shipped": "Shipped",
+    "delivered": "Delivered",
+    "loginRequired": "Login to view your orders",
+    "placeSuccess": "Order placed successfully!",
+    "placeFailed": "Failed to place order",
+    "location": "Location"
+  },
+
+  "bucket": {
+    "balance": "Current Balance",
+    "charge": "Charge Your Wallet",
+    "chargeDescription": "Contact the admin via WhatsApp to add funds to your wallet",
+    "noPhone": "Admin phone number not configured",
+    "loginRequired": "Login to view your balance",
+    "failedWhatsApp": "Failed to open WhatsApp",
+    "loginSignup": "Login / Sign Up"
+  },
+
+  "product": {
+    "price": "Price",
+    "description": "Description",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "addToCart": "Add to Cart",
+    "relatedProducts": "Related Products"
+  },
+
+  "auth": {
+    "loginTitle": "Welcome Back",
+    "createAccount": "Create Account",
+    "enterPhone": "Enter your Syrian phone number (+963)",
+    "phoneRequired": "Please enter your phone number",
+    "phoneInvalid": "Please enter a valid 9-digit Syrian phone number",
+    "passwordPlaceholder": "Password",
+    "confirmPassword": "Confirm Password",
+    "passwordRequired": "Please enter your password",
+    "passwordTooShort": "Password must be at least 6 characters",
+    "passwordsNotMatch": "Passwords do not match",
+    "login": "Login",
+    "noAccount": "Don't have an account? Sign up",
+    "hasAccount": "Already have an account? Login",
+    "loginSignup": "Login / Sign Up"
+  },
+
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "language": "Language",
+    "themeOptions": { "system": "System", "light": "Light", "dark": "Dark" },
+    "logout": "Logout",
+    "logoutConfirm": "Are you sure you want to logout?",
+    "cancel": "Cancel",
+    "account": "Account"
+  },
+
+  "language": { "english": "English", "arabic": "العربية" },
+
+  "cart": {
+    "empty": "Cart is empty",
+    "purchase": "Purchase",
+    "total": "Total",
+    "deliveryAddress": "Delivery Address",
+    "browseLocations": "Browse Locations",
+    "orEnterAddress": "Or enter a custom address:",
+    "saveAddress": "Save this address to my profile",
+    "saveAddressHint": "Give this address a name (e.g. Home, Work, etc.)",
+    "locationNamePlaceholder": "Location name",
+    "skip": "Skip",
+    "confirmPurchase": "Confirm Purchase",
+    "deliveryLocation": "Delivery Location",
+    "selectState": "Select State",
+    "selectRegion": "Select Region in {name}",
+    "selectWay": "Select Delivery Company in {name}",
+    "enterAddress": "Enter Delivery Address in {name}",
+    "confirmAddress": "Confirm Address",
+    "direct": "Direct",
+    "addressPlaceholder": "Street, building, floor, apartment",
+    "default": "Default"
+  },
+
+  "categories": {
+    "showMore": "Show more"
+  }
+}
