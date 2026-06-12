@@ -1,4 +1,4 @@
-import { queryKeys, useApiQuery, useInfiniteApiQuery, type ApiResponse, type Container } from "@/api";
+import { useApiQuery, type ApiResponse, type Container, type ContainerProduct } from "@/api";
 import { useCart } from "@/context/CartContext";
 import { buildImageUrl } from "@/utils/imageUrl";
 import { useGlobalStyles } from "@/styles/global";
@@ -25,31 +25,32 @@ export default function ContainerDetail() {
   const { gs, plate } = useGlobalStyles();
   const { addItem } = useCart();
   const { t } = useTranslation();
-  const [selectedIdx, setSelectedIdx] = useState(0);
-  const [imageIdx, setImageIdx] = useState(0);
+  const [qty, setQty] = useState(1);
   const scrollRef = useRef<FlatList>(null);
 
-  const { data, isLoading } = useApiQuery<ApiResponse<Container>>({
+  const [productPage, setProductPage] = useState(0);
+  const [imageIndices, setImageIndices] = useState<Record<number, number>>({});
+
+  const { data: containerData, isLoading: containerLoading } = useApiQuery<ApiResponse<Container>>({
     url: `containers/${id}`,
-    queryKey: queryKeys.containers.detail(id!),
+    queryKey: ["api", "containers", "detail", id!],
     enabled: !!id,
   });
 
-  const { data: allData, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteApiQuery<Container>({
-      url: "containers",
-      queryKey: queryKeys.containers.list(),
-      params: { limit: 20 },
-      enabled: !!data?.data,
-    });
+  const container = containerData?.data;
+  const embeddedProducts = container?.products ?? [];
 
-  const container = data?.data;
-  const products = container?.products ?? [];
-  const product = products[selectedIdx];
-  const allContainers = allData?.pages.flatMap((page) => page.data) ?? [];
-  const related = allContainers.filter((c) => c._id !== id).slice(0, 6);
+  const { data: fallbackData, isLoading: fallbackLoading } = useApiQuery<ApiResponse<ContainerProduct[]>>({
+    url: `products`,
+    queryKey: ["api", "products", "list", { container: id }],
+    params: { container: id, limit: 100 },
+    enabled: !!id && embeddedProducts.length === 0,
+  });
 
-  if (isLoading || !container) {
+  const products = embeddedProducts.length > 0 ? embeddedProducts : (fallbackData?.data ?? []);
+  const product = products[productPage];
+  const images = product?.images ?? [];
+  if (containerLoading || (embeddedProducts.length === 0 && fallbackLoading)) {
     return (
       <View style={[gs.container, gs.centered]}>
         <ActivityIndicator size="large" color={plate.primary} />
@@ -57,204 +58,210 @@ export default function ContainerDetail() {
     );
   }
 
-  const images = product?.images ?? [];
+  if (!product) {
+    return (
+      <View style={[gs.container, gs.centered]}>
+        <Text style={gs.h2}>{t("common.error")}</Text>
+      </View>
+    );
+  }
 
-  return (
-    <ScrollView style={gs.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Text style={[gs.h1, { marginTop: 16 }]}>{container.name}</Text>
-      <Text style={[gs.textSmall, { marginTop: 4 }]}>{container.shortDescription}</Text>
+  const handleAddToCart = () => {
+    if ((product.stock ?? 0) <= 0) return;
+    addItem({
+      containerId: id!,
+      productIndex: productPage,
+      name: product.name,
+      price: product.price,
+      image: images[0] ?? "",
+    }, qty);
+    Alert.alert("", `${qty} × ${product.name} ${t("product.addToCart")}`);
+  };
 
-      {products.length > 1 ? (
-        <View style={{ flexDirection: "row", gap: 8, marginTop: 16 }}>
-          {products.map((_, i) => (
-            <TouchableOpacity
-              key={i}
-              onPress={() => { setSelectedIdx(i); setImageIdx(0); }}
-              style={[
-                { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
-                { backgroundColor: i === selectedIdx ? plate.primary : plate.gray },
-              ]}
-            >
-              <Text style={[gs.caption, { color: i === selectedIdx ? "#fff" : plate.text }]}>
-                {i + 1}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      ) : null}
+  const handleProductChange = (index: number) => {
+    setProductPage(index);
+    setQty(1);
+  };
 
-      {product ? (
-        <>
-          {images.length > 0 ? (
-            <View style={{ marginTop: 12 }}>
-              <FlatList
-                ref={scrollRef}
-                data={images}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(_, i) => String(i)}
-                onMomentumScrollEnd={(e) => {
-                  const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-                  setImageIdx(idx);
-                }}
-                renderItem={({ item }) => (
-                  <Image
-                    source={{ uri: buildImageUrl(item) }}
-                    style={{ width: SCREEN_WIDTH - 40, height: 220, borderRadius: 12 }}
-                    resizeMode="cover"
-                  />
-                )}
-              />
-              {images.length > 1 && (
-                <View style={{ flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 8 }}>
-                  {images.map((_, i) => (
-                    <View
-                      key={i}
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 4,
-                        backgroundColor: i === imageIdx ? plate.primary : plate.gray,
-                      }}
-                    />
-                  ))}
-                </View>
-              )}
-            </View>
-          ) : (
-            <View
-              style={{
-                width: "100%",
-                height: 220,
-                borderRadius: 12,
-                marginTop: 12,
-                backgroundColor: plate.gray,
-                justifyContent: "center",
-                alignItems: "center",
+  const handleImageChange = (productIdx: number, imgIdx: number) => {
+    setImageIndices((prev) => ({ ...prev, [productIdx]: imgIdx }));
+  };
+
+  const renderProductPage = ({ item }: { item: ContainerProduct }) => {
+    const prodImages = item.images ?? [];
+    const imgIdx = imageIndices[productPage] ?? 0;
+    return (
+      <ScrollView
+        style={{ width: SCREEN_WIDTH }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {prodImages.length > 0 ? (
+          <View>
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const idx = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40));
+                handleImageChange(productPage, idx);
               }}
             >
-              <Ionicons name="image-outline" size={48} color={plate.textSecond} />
-            </View>
-          )}
+              {prodImages.map((img, i) => (
+                <Image
+                  key={i}
+                  source={{ uri: buildImageUrl(img) }}
+                  style={{ width: SCREEN_WIDTH - 40, height: SCREEN_WIDTH - 40, borderRadius: 12 }}
+                  resizeMode="cover"
+                />
+              ))}
+            </ScrollView>
+            {prodImages.length > 1 && (
+              <View style={{ flexDirection: "row", justifyContent: "center", gap: 6, marginTop: 8 }}>
+                {prodImages.map((_, i) => (
+                  <View
+                    key={i}
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: i === imgIdx ? plate.primary : plate.gray,
+                    }}
+                  />
+                ))}
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={{ width: "100%", height: SCREEN_WIDTH - 40, borderRadius: 12, backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }}>
+            <Ionicons name="image-outline" size={48} color={plate.textSecond} />
+          </View>
+        )}
 
-          <Text style={[gs.h2, { marginTop: 16 }]}>{product.name}</Text>
-          <Text style={[gs.text, { marginTop: 8 }]}>{product.longDescription}</Text>
-
-          <View style={[gs.rowBetween, { marginTop: 16 }]}>
-            <Text style={gs.h2}>${product.price}</Text>
-            {product.stock > 0 ? (
-              <View style={[gs.badge, { backgroundColor: plate.green }]}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginTop: 16 }}>
+          <Text style={[gs.h2, { flex: 1 }]}>{item.name}</Text>
+          <View style={{ alignItems: "flex-end" }}>
+            <Text style={[gs.h1, { color: plate.primary }]}>
+              {(item as any).priceSY?.toLocaleString() ?? (item.price?.toFixed(2) ?? "0")} SYP
+            </Text>
+            {item.stock > 0 ? (
+              <View style={[gs.badge, { backgroundColor: plate.green, marginTop: 4 }]}>
                 <Text style={gs.badgeText}>{t("product.inStock")}</Text>
               </View>
             ) : (
-              <View style={[gs.badge, { backgroundColor: plate.red }]}>
+              <View style={[gs.badge, { backgroundColor: plate.red, marginTop: 4 }]}>
                 <Text style={gs.badgeText}>{t("product.outOfStock")}</Text>
               </View>
             )}
           </View>
+        </View>
 
-          {product.tags && product.tags.length > 0 ? (
-            <>
-              <Text style={[gs.h3, { marginTop: 20 }]}>Tags</Text>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-                {product.tags.map((tag, i) => (
-                  <View key={i} style={[gs.tag, { backgroundColor: plate.primary + "20" }]}>
-                    <Text style={gs.tagText}>{tag}</Text>
-                  </View>
-                ))}
-              </View>
-            </>
-          ) : null}
+        {item.longDescription ? (
+          <Text style={[gs.text, { marginTop: 12 }]}>{item.longDescription}</Text>
+        ) : null}
 
-          {product.notes && product.notes.length > 0 ? (
-            <>
-              <Text style={[gs.h3, { marginTop: 20 }]}>Notes</Text>
-              <View style={{ marginTop: 8 }}>
-                {product.notes.map((note, i) => (
-                  <View key={i} style={[gs.containerRow, { marginBottom: 4 }]}>
-                    <Text style={{ color: plate.primary, marginRight: 8 }}>•</Text>
-                    <Text style={gs.textSmall}>{note}</Text>
-                  </View>
-                ))}
+        {item.tags && item.tags.length > 0 ? (
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+            {item.tags.map((tag, i) => (
+              <View key={i} style={[gs.tag, { backgroundColor: plate.primary + "20" }]}>
+                <Text style={gs.tagText}>{tag}</Text>
               </View>
-            </>
-          ) : null}
+            ))}
+          </View>
+        ) : null}
+
+        {item.notes && item.notes.length > 0 ? (
+          <View style={{ marginTop: 12 }}>
+            {item.notes.map((note, i) => (
+              <View key={i} style={[gs.containerRow, { marginBottom: 4 }]}>
+                <Text style={{ color: plate.primary, marginRight: 8 }}>•</Text>
+                <Text style={gs.textSmall}>{note}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+
+        <View style={[gs.cardElevated, { marginTop: 20, padding: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+            <Text style={gs.label}>{t("cart.qty", { qty: "", price: "" }).split(":")[0] || "Qty"}:</Text>
+            <TouchableOpacity
+              onPress={() => setQty((v) => Math.max(1, v - 1))}
+              style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }}
+            >
+              <Ionicons name="remove" size={20} color={plate.text} />
+            </TouchableOpacity>
+            <Text style={[gs.h2, { minWidth: 30, textAlign: "center" }]}>{qty}</Text>
+            <TouchableOpacity
+              onPress={() => setQty((v) => Math.min(item.stock, v + 1))}
+              style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }}
+            >
+              <Ionicons name="add" size={20} color={plate.text} />
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
-            style={[gs.button, { marginTop: 24, opacity: (product.stock ?? 0) > 0 ? 1 : 0.5 }]}
-            onPress={() => {
-              if ((product.stock ?? 0) <= 0) return;
-              addItem({
-                containerId: id!,
-                productIndex: selectedIdx,
-                name: product.name,
-                price: product.price,
-                image: images[0] ?? "",
-              });
-              Alert.alert("", `${product.name} ${t("product.addToCart")}`);
-            }}
-            disabled={(product.stock ?? 0) <= 0}
+            style={[gs.button, { opacity: (item.stock ?? 0) > 0 ? 1 : 0.5, paddingHorizontal: 16 }]}
+            onPress={handleAddToCart}
+            disabled={(item.stock ?? 0) <= 0}
           >
-            <Ionicons name="cart" size={20} color={plate.background} style={{ marginRight: 8 }} />
+            <Ionicons name="cart" size={18} color={plate.background} style={{ marginRight: 6 }} />
             <Text style={gs.buttonText}>{t("product.addToCart")}</Text>
           </TouchableOpacity>
+        </View>
+      </ScrollView>
+    );
+  };
 
-          {related.length > 0 && (
-            <>
-              <Text style={[gs.h2, { marginTop: 32 }]}>{t("product.relatedProducts")}</Text>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
-                {related.map((rel) => {
-                  const relProduct = rel.products?.[0];
-                  const relImage = buildImageUrl(relProduct?.images?.[0]);
-                  return (
-                    <TouchableOpacity
-                      key={rel._id}
-                      style={{ width: (SCREEN_WIDTH - 60) / 2 }}
-                      onPress={() => router.push(`/(drawer)/(tabs)/containers/${rel._id}`)}
-                    >
-                      <View style={[gs.cardFlat, { overflow: "hidden" }]}>
-                        {relImage ? (
-                          <Image
-                            source={{ uri: relImage }}
-                            style={{ width: "100%", height: 120 }}
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View style={{ width: "100%", height: 120, backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }}>
-                            <Ionicons name="image-outline" size={32} color={plate.textSecond} />
-                          </View>
-                        )}
-                        <View style={{ padding: 8 }}>
-                          <Text style={gs.caption} numberOfLines={1}>{rel.name}</Text>
-                          {relProduct?.price != null && (
-                            <Text style={[gs.caption, { color: plate.primary, marginTop: 2, fontWeight: "600" }]}>
-                              ${relProduct.price.toFixed(2)}
-                            </Text>
-                          )}
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-              {hasNextPage && (
-                <TouchableOpacity
-                  style={[gs.buttonOutline, { marginTop: 16 }]}
-                  onPress={() => fetchNextPage()}
-                  disabled={isFetchingNextPage}
-                >
-                  {isFetchingNextPage ? (
-                    <ActivityIndicator size="small" color={plate.primary} />
-                  ) : (
-                    <Text style={gs.buttonTextSecondary}>Show more</Text>
-                  )}
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-        </>
-      ) : null}
-    </ScrollView>
+  return (
+    <View style={{ flex: 1, backgroundColor: plate.background }}>
+      <View style={[gs.containerRow, { padding: 16, backgroundColor: plate.backgroundSecond, alignItems: "center" }]}>
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 4 }}>
+          <Ionicons name="arrow-back" size={24} color={plate.text} />
+        </TouchableOpacity>
+        <View style={{ marginLeft: 12, flex: 1 }}>
+          <Text style={[gs.h3]} numberOfLines={1}>{container?.name}</Text>
+          {container?.shortDescription ? (
+            <Text style={gs.caption} numberOfLines={1}>{container.shortDescription}</Text>
+          ) : null}
+        </View>
+      </View>
+
+      {products.length > 1 && (
+        <View style={{ flexDirection: "row", justifyContent: "center", gap: 8, paddingVertical: 8, backgroundColor: plate.backgroundSecond }}>
+          {products.map((_, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => handleProductChange(i)}
+              style={{
+                width: productPage === i ? 24 : 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: productPage === i ? plate.primary : plate.gray,
+              }}
+            />
+          ))}
+        </View>
+      )}
+
+      <FlatList
+        ref={scrollRef}
+        data={products}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(_, i) => String(i)}
+        initialScrollIndex={0}
+        getItemLayout={(_, index) => ({
+          length: SCREEN_WIDTH,
+          offset: SCREEN_WIDTH * index,
+          index,
+        })}
+        onMomentumScrollEnd={(e) => {
+          const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+          handleProductChange(idx);
+        }}
+        renderItem={renderProductPage}
+      />
+    </View>
   );
 }

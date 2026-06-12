@@ -10,6 +10,23 @@ let configCache: ApiConfig = {
   timeout: 15000,
 };
 
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+function processQueue(error: unknown, token: string | null) {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token!);
+    }
+  });
+  failedQueue = [];
+}
+
 export function configureApi(config: Partial<ApiConfig>) {
   configCache = { ...configCache, ...config };
   if (apiInstance) {
@@ -67,7 +84,52 @@ function createApiClient(config?: Partial<ApiConfig>): AxiosInstance {
 
   instance.interceptors.response.use(
     (response) => response,
-    (error: AxiosError) => {
+    async (error: AxiosError) => {
+      const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+      if (error.response?.status === 401 && !originalRequest._retry && configCache.getRefreshToken) {
+        const refreshToken = configCache.getRefreshToken();
+        if (!refreshToken) {
+          if (configCache.onUnauthorized) configCache.onUnauthorized();
+          return Promise.reject(error);
+        }
+
+        if (isRefreshing) {
+          return new Promise<string>((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return instance(originalRequest);
+            })
+            .catch((err) => Promise.reject(err));
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          const response = await axios.post(`${configCache.baseURL}auth/refresh`, { refreshToken });
+          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+
+          setApiToken(accessToken);
+          processQueue(null, accessToken);
+
+          if (configCache.onRefresh) {
+            configCache.onRefresh(accessToken, newRefreshToken);
+          }
+
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return instance(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError, null);
+          if (configCache.onUnauthorized) configCache.onUnauthorized();
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
+      }
+
       if (error.response?.status === 401 && configCache.onUnauthorized) {
         configCache.onUnauthorized();
       }

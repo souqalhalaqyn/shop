@@ -72,7 +72,7 @@ export default function CategoryDetail() {
               <Text
                 style={[gs.textBold, { color: plate.primary, marginTop: 4 }]}
               >
-                ${firstProduct.price}
+                {((firstProduct as any).priceSY ?? firstProduct.price).toLocaleString()} SYP
               </Text>
             ) : null}
           </View>

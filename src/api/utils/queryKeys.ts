@@ -46,6 +46,11 @@ export const queryKeys = {
     balance: () => ["api", "bucket", "balance"] as const,
   },
 
+  chargeRequests: {
+    all: () => ["api", "charge-requests"] as const,
+    list: () => ["api", "charge-requests", "list"] as const,
+  },
+
   locations: {
     all: ["api", "locations"] as const,
     tree: () => ["api", "locations", "tree"] as const,

@@ -21,11 +21,13 @@
     "cart": "السلة",
     "orders": "الطلبات",
     "bucket": "المحفظة",
+    "offers": "العروض",
     "ads": "الإعلانات",
     "shops": "المحلات",
     "settings": "الإعدادات",
     "accounts": "الحسابات",
-    "login": "تسجيل الدخول"
+    "login": "تسجيل الدخول",
+    "communicateUs": "تواصل معنا"
   },
   "keywords": { "categories": "الفئات" },
 
@@ -76,7 +78,22 @@
     "noPhone": "رقم هاتف المشرف غير مضبوط",
     "loginRequired": "سجل الدخول لعرض رصيدك",
     "failedWhatsApp": "فشل فتح واتساب",
-    "loginSignup": "تسجيل الدخول / إنشاء حساب"
+    "loginSignup": "تسجيل الدخول / إنشاء حساب",
+    "shamCash": "شام كاش",
+    "scanQr": "امسح رمز QR هذا باستخدام تطبيق شام كاش",
+    "shamCashApp": "فتح تطبيق شام كاش",
+    "paymentProof": "رفع إثبات الدفع",
+    "selectPhoto": "اختر صورة",
+    "amount": "المبلغ (ل.س)",
+    "amountPlaceholder": "أدخل المبلغ بالليرة السورية",
+    "submitRequest": "تقديم الطلب",
+    "requestSubmitted": "تم تقديم طلب الشحن بنجاح!",
+    "requestFailed": "فشل تقديم طلب الشحن",
+    "myRequests": "طلبات الشحن الخاصة بي",
+    "pending": "قيد الانتظار",
+    "done": "تمت الموافقة",
+    "cancelled": "ملغي",
+    "noRequests": "لا توجد طلبات شحن بعد"
   },
 
   "product": {
@@ -140,5 +157,31 @@
 
   "categories": {
     "showMore": "عرض المزيد"
+  },
+
+  "offer": {
+    "listTitle": "العروض المتاحة",
+    "emptyList": "لا توجد عروض متاحة",
+    "buyNow": "اشتر الآن",
+    "offerPrice": "السعر الإجمالي",
+    "unitSellPrice": "سعر البيع للوحدة",
+    "commission": "العمولة",
+    "quantity": "الكمية: {qty}",
+    "buySuccess": "تم شراء العرض بنجاح!",
+    "buyFailed": "فشل شراء العرض",
+    "myOffer": "العرض الخاص بي",
+    "sold": "تم البيع: {sold}/{total}",
+    "remaining": "تبقى {count}",
+    "totalProfit": "إجمالي الربح",
+    "purchases": "سجل المشتريات",
+    "noMyOffer": "لم تقم بشراء أي عرض بعد",
+    "retailBuyer": "المشتري",
+    "quantitySold": "الكمية",
+    "statusAvailable": "متاح",
+    "statusSold": "تم البيع",
+    "statusCompleted": "مكتمل",
+    "insufficientBalance": "الرصيد غير كافٍ",
+    "confirmBuy": "شراء هذا العرض بمبلغ {price}؟",
+    "confirmBuyTitle": "تأكيد الشراء"
   }
 }

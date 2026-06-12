@@ -5,6 +5,7 @@ export interface ContainerProduct {
   longDescription: string;
   images: string[];
   price: number;
+  priceSY?: number;
   stock: number;
   tags: string[];
   aliases: string[];

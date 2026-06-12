@@ -171,7 +171,24 @@ export default function HeroSlider({ images }: HeroSliderProps) {
   const markFailed = (index: number) =>
     setFailedImages((prev) => new Set(prev).add(index));
 
-  if (slideCount === 0) return null;
+  if (slideCount === 0) {
+    return (
+      <View
+        style={[
+          styles.container,
+          {
+            width: SCREEN_WIDTH,
+            height: HERO_HEIGHT,
+            backgroundColor: plate.gray,
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        ]}
+      >
+        <Ionicons name="image-outline" size={48} color={plate.textSecond} />
+      </View>
+    );
+  }
 
   const renderSlideContent = (index: number) => {
     if (failedImages.has(index)) {

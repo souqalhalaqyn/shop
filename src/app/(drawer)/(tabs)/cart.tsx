@@ -142,7 +142,7 @@ export default function CartScreen() {
       />
       <View style={{ flex: 1, justifyContent: "center" }}>
         <Text style={gs.label} numberOfLines={1}>{item.name}</Text>
-        <Text style={[gs.caption, { color: plate.primary, marginTop: 2 }]}>${item.price}</Text>
+        <Text style={[gs.caption, { color: plate.primary, marginTop: 2 }]}>{(item as any).priceSY ?? item.price} SYP</Text>
         <View style={[gs.containerRow, { marginTop: 6, gap: 0 }]}>
           <TouchableOpacity
             onPress={() => updateQuantity(item.containerId, item.productIndex, item.quantity - 1)}
@@ -196,7 +196,7 @@ export default function CartScreen() {
             }}
           >
             <View style={gs.rowBetween}>
-              <Text style={gs.h2}>{t("cart.total")}: ${total.toFixed(2)}</Text>
+              <Text style={gs.h2}>{t("cart.total")}: {total.toLocaleString()} SYP</Text>
               <TouchableOpacity style={gs.button} onPress={openPurchase}>
                 <Text style={gs.buttonText}>{t("cart.purchase")}</Text>
               </TouchableOpacity>
@@ -308,7 +308,7 @@ export default function CartScreen() {
                     {submitting ? (
                       <ActivityIndicator color={plate.background} />
                     ) : (
-                      <Text style={gs.buttonText}>{t("cart.confirmPurchase")} (${total.toFixed(2)})</Text>
+                      <Text style={gs.buttonText}>{t("cart.confirmPurchase")} ({total.toLocaleString()} SYP)</Text>
                     )}
                   </TouchableOpacity>
                 </View>

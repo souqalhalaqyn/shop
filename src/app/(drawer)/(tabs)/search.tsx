@@ -101,7 +101,7 @@ export default function SearchScreen() {
               <Text
                 style={[gs.caption, { color: plate.primary, marginTop: 2 }]}
               >
-                ${product.price.toFixed(2)}
+                {((product as any).priceSY ?? product.price).toLocaleString()} SYP
               </Text>
             )}
           </View>

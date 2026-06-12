@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -41,6 +42,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const tokensRef = useRef<{ accessToken: string; refreshToken: string } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -53,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             refreshToken: string;
           };
           setUser(parsed.user);
+          tokensRef.current = { accessToken: parsed.accessToken, refreshToken: parsed.refreshToken };
           setApiToken(parsed.accessToken);
         }
       } catch {
@@ -63,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const onUnauthorized = useCallback(() => {
+    tokensRef.current = null;
     clearAppStorage().then(() => {
       setUser(null);
       setApiToken(null);
@@ -70,14 +74,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    configureApi({ onUnauthorized });
-  }, [onUnauthorized]);
+    configureApi({
+      onUnauthorized,
+      getRefreshToken: () => tokensRef.current?.refreshToken ?? null,
+      onRefresh: (accessToken: string, refreshToken: string) => {
+        const currentUser = user;
+        if (currentUser) {
+          tokensRef.current = { accessToken, refreshToken };
+          AsyncStorage.setItem(
+            AUTH_STORAGE_KEY,
+            JSON.stringify({ user: currentUser, accessToken, refreshToken }),
+          );
+        }
+      },
+    });
+  }, [onUnauthorized, user]);
 
   const saveAuth = async (
     userData: AuthUser,
     accessToken: string,
     refreshToken: string,
   ) => {
+    tokensRef.current = { accessToken, refreshToken };
     await AsyncStorage.setItem(
       AUTH_STORAGE_KEY,
       JSON.stringify({ user: userData, accessToken, refreshToken }),
@@ -129,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await getApiClient().post("auth/logout");
     } catch {
     } finally {
+      tokensRef.current = null;
       await clearAppStorage();
       setUser(null);
       setApiToken(null);

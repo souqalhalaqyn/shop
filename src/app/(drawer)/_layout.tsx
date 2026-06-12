@@ -1,4 +1,5 @@
 import HeaderTitle from "@/components/HeaderTitle";
+import { ADMIN_PHONE_NUMBER } from "@/config/constants";
 import { useAuth } from "@/context/AuthContext";
 import { useGlobalStyles } from "@/styles/global";
 import { Ionicons } from "@expo/vector-icons";
@@ -9,7 +10,14 @@ import {
 import { Drawer } from "expo-router/drawer";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
-import { Dimensions, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Dimensions,
+  Linking,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const { width } = Dimensions.get("window");
 
@@ -17,6 +25,14 @@ export default function DrawerLayout() {
   const { plate, gs } = useGlobalStyles();
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
+
+  const handleCommunicate = () => {
+    const phone = ADMIN_PHONE_NUMBER.replace(/^\+/, "");
+    const url = `https://wa.me/${phone}`;
+    Linking.openURL(url).catch(() => {
+      Alert.alert("", t("bucket.failedWhatsApp"));
+    });
+  };
 
   return (
     <Drawer
@@ -54,6 +70,18 @@ export default function DrawerLayout() {
           )}
 
           <DrawerItemList {...props} />
+
+          <View style={{ paddingHorizontal: 20, paddingTop: 16, borderTopWidth: 1, borderTopColor: plate.gray, marginTop: 16 }}>
+            <TouchableOpacity
+              style={[gs.containerRow, { gap: 12, paddingVertical: 12 }]}
+              onPress={handleCommunicate}
+            >
+              <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
+              <Text style={[gs.label, { color: plate.text, fontSize: 16 }]}>
+                {t("navigation.communicateUs")}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </DrawerContentScrollView>
       )}
       screenOptions={{

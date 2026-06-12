@@ -54,10 +54,6 @@ export default function TopContainersBar({ title }: TopContainersBarProps) {
     [hasNextPage, isFetchingNextPage, fetchNextPage],
   );
 
-  const formatter = new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 0,
-  });
-
   return (
     <View style={{ marginBottom: 24 }}>
       <View style={styles.header}>
@@ -107,7 +103,7 @@ export default function TopContainersBar({ title }: TopContainersBarProps) {
                 </Text>
                 {firstProduct ? (
                   <Text style={[styles.price, { color: plate.primary }]}>
-                    ${formatter.format(firstProduct.price)}
+                    {((firstProduct as any).priceSY ?? firstProduct.price).toLocaleString()} SYP
                   </Text>
                 ) : null}
               </View>

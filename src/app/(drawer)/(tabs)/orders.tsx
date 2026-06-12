@@ -163,7 +163,7 @@ export default function OrdersScreen() {
               {orderItem.name}
             </Text>
             <Text style={[gs.caption, { color: plate.textSecond }]}>
-              {t("orders.qty")}: {orderItem.quantity} × ${orderItem.price.toFixed(2)}
+              {t("orders.qty")}: {orderItem.quantity} × {orderItem.price.toFixed(2)} SYP
             </Text>
           </View>
         </View>
@@ -183,7 +183,7 @@ export default function OrdersScreen() {
           ) : null}
         </View>
         <Text style={[gs.textBold, { color: plate.primary }]}>
-          ${item.total.toFixed(2)}
+          {item.total.toFixed(2)} SYP
         </Text>
       </View>
 

@@ -26,7 +26,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           tabBarLabel: ({ focused, color }) =>
-            focused ? <Text style={{ color }}>{t("navigation.home")}</Text> : null,
+            focused ? <Text style={{ color }} numberOfLines={1}>{t("navigation.home")}</Text> : null,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}
@@ -41,7 +41,7 @@ export default function TabsLayout() {
         name="cart"
         options={{
           tabBarLabel: ({ focused, color }) =>
-            focused ? <Text style={{ color }}>{t("navigation.cart")}</Text> : null,
+            focused ? <Text style={{ color }} numberOfLines={1}>{t("navigation.cart")}</Text> : null,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "cart" : "cart-outline"}
@@ -57,7 +57,7 @@ export default function TabsLayout() {
         name="orders"
         options={{
           tabBarLabel: ({ focused, color }) =>
-            focused ? <Text style={{ color }}>{t("navigation.orders")}</Text> : null,
+            focused ? <Text style={{ color }} numberOfLines={1}>{t("navigation.orders")}</Text> : null,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "list" : "list-outline"}
@@ -72,7 +72,7 @@ export default function TabsLayout() {
         name="bucket"
         options={{
           tabBarLabel: ({ focused, color }) =>
-            focused ? <Text style={{ color }}>{t("navigation.bucket")}</Text> : null,
+            focused ? <Text style={{ color }} numberOfLines={1}>{t("navigation.bucket")}</Text> : null,
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "card" : "card-outline"}
@@ -81,6 +81,31 @@ export default function TabsLayout() {
             />
           ),
         }}
+      />
+
+      <Tabs.Screen
+        name="offers/index"
+        options={{
+          tabBarLabel: ({ focused, color }) =>
+            focused ? <Text style={{ color }} numberOfLines={1}>{t("navigation.offers")}</Text> : null,
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? "pricetags" : "pricetags-outline"}
+              size={size}
+              color={color}
+            />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="offers/[id]"
+        options={{ href: null, headerShown: false }}
+      />
+
+      <Tabs.Screen
+        name="offers/mine"
+        options={{ href: null, headerShown: false }}
       />
 
       <Tabs.Screen

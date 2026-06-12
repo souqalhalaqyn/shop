@@ -22,11 +22,13 @@
     "cart": "Cart",
     "orders": "Orders",
     "bucket": "Bucket",
+    "offers": "Offers",
     "ads": "Ads",
     "shops": "Shops",
     "settings": "Settings",
     "accounts": "Accounts",
-    "login": "Login"
+    "login": "Login",
+    "communicateUs": "Communicate Us"
   },
 
   "keywords": {
@@ -81,7 +83,22 @@
     "noPhone": "Admin phone number not configured",
     "loginRequired": "Login to view your balance",
     "failedWhatsApp": "Failed to open WhatsApp",
-    "loginSignup": "Login / Sign Up"
+    "loginSignup": "Login / Sign Up",
+    "shamCash": "Sham Cash",
+    "scanQr": "Scan this QR code with Sham Cash App",
+    "shamCashApp": "Open Sham Cash App",
+    "paymentProof": "Upload Payment Proof",
+    "selectPhoto": "Select Photo",
+    "amount": "Amount (SYP)",
+    "amountPlaceholder": "Enter amount in Syrian Pounds",
+    "submitRequest": "Submit Request",
+    "requestSubmitted": "Charge request submitted successfully!",
+    "requestFailed": "Failed to submit charge request",
+    "myRequests": "My Charge Requests",
+    "pending": "Pending",
+    "done": "Approved",
+    "cancelled": "Cancelled",
+    "noRequests": "No charge requests yet"
   },
 
   "product": {
@@ -148,5 +165,31 @@
 
   "categories": {
     "showMore": "Show more"
+  },
+
+  "offer": {
+    "listTitle": "Available Offers",
+    "emptyList": "No offers available",
+    "buyNow": "Buy Now",
+    "offerPrice": "Total Price",
+    "unitSellPrice": "Unit Sell Price",
+    "commission": "Commission",
+    "quantity": "Quantity: {qty}",
+    "buySuccess": "Offer purchased successfully!",
+    "buyFailed": "Failed to purchase offer",
+    "myOffer": "My Offer",
+    "sold": "Sold: {sold}/{total}",
+    "remaining": "{count} remaining",
+    "totalProfit": "Total Profit",
+    "purchases": "Purchase History",
+    "noMyOffer": "You haven't purchased any offer yet",
+    "retailBuyer": "Buyer",
+    "quantitySold": "Qty",
+    "statusAvailable": "Available",
+    "statusSold": "Sold",
+    "statusCompleted": "Completed",
+    "insufficientBalance": "Insufficient balance",
+    "confirmBuy": "Buy this offer for {price}?",
+    "confirmBuyTitle": "Confirm Purchase"
   }
 }
