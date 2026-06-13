@@ -48,14 +48,15 @@ export default function OffersList() {
 
   return (
     <View style={gs.safeArea}>
-      <View style={[gs.container]}>
+      <View style={{ paddingHorizontal: 20 }}>
         <Text style={[gs.h1, { marginTop: 16, marginBottom: 16 }]}>{t("offer.listTitle")}</Text>
       </View>
 
       <FlatList
         data={offers}
         keyExtractor={(item) => item._id}
-        contentContainerStyle={[gs.container, offers.length === 0 && { flex: 1 }]}
+        style={{ flex: 1 }}
+        contentContainerStyle={[{ paddingHorizontal: 20 }, offers.length === 0 && { flex: 1 }]}
         refreshControl={<RefreshControl refreshing={false} onRefresh={refetch} />}
         ListEmptyComponent={
           <View style={[gs.centered, { flex: 1 }]}>

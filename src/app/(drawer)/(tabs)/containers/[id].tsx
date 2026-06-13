@@ -38,19 +38,18 @@ export default function ContainerDetail() {
   });
 
   const container = containerData?.data;
-  const embeddedProducts = container?.products ?? [];
 
-  const { data: fallbackData, isLoading: fallbackLoading } = useApiQuery<ApiResponse<ContainerProduct[]>>({
+  const { data: productsData, isLoading: productsLoading } = useApiQuery<ApiResponse<ContainerProduct[]>>({
     url: `products`,
     queryKey: ["api", "products", "list", { container: id }],
     params: { container: id, limit: 100 },
-    enabled: !!id && embeddedProducts.length === 0,
+    enabled: !!id,
   });
 
-  const products = embeddedProducts.length > 0 ? embeddedProducts : (fallbackData?.data ?? []);
+  const products = productsData?.data ?? [];
   const product = products[productPage];
   const images = product?.images ?? [];
-  if (containerLoading || (embeddedProducts.length === 0 && fallbackLoading)) {
+  if (containerLoading || productsLoading) {
     return (
       <View style={[gs.container, gs.centered]}>
         <ActivityIndicator size="large" color={plate.primary} />
@@ -181,32 +180,34 @@ export default function ContainerDetail() {
           </View>
         ) : null}
 
-        <View style={[gs.cardElevated, { marginTop: 20, padding: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }]}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-            <Text style={gs.label}>{t("cart.qty", { qty: "", price: "" }).split(":")[0] || "Qty"}:</Text>
+        <View style={[gs.cardElevated, { marginTop: 20, padding: 16 }]}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 1 }}>
+              <Text style={gs.label}>{t("cart.qty", { qty: "", price: "" }).split(":")[0] || "Qty"}:</Text>
+              <TouchableOpacity
+                onPress={() => setQty((v) => Math.max(1, v - 1))}
+                style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }}
+              >
+                <Ionicons name="remove" size={18} color={plate.text} />
+              </TouchableOpacity>
+              <Text style={[gs.h2, { minWidth: 28, textAlign: "center" }]}>{qty}</Text>
+              <TouchableOpacity
+                onPress={() => setQty((v) => Math.min(item.stock, v + 1))}
+                style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }}
+              >
+                <Ionicons name="add" size={18} color={plate.text} />
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
-              onPress={() => setQty((v) => Math.max(1, v - 1))}
-              style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }}
+              style={[gs.button, { opacity: (item.stock ?? 0) > 0 ? 1 : 0.5, paddingHorizontal: 12, paddingVertical: 10 }]}
+              onPress={handleAddToCart}
+              disabled={(item.stock ?? 0) <= 0}
             >
-              <Ionicons name="remove" size={20} color={plate.text} />
-            </TouchableOpacity>
-            <Text style={[gs.h2, { minWidth: 30, textAlign: "center" }]}>{qty}</Text>
-            <TouchableOpacity
-              onPress={() => setQty((v) => Math.min(item.stock, v + 1))}
-              style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }}
-            >
-              <Ionicons name="add" size={20} color={plate.text} />
+              <Ionicons name="cart" size={16} color={plate.background} style={{ marginRight: 4 }} />
+              <Text style={[gs.buttonText, { fontSize: 13 }]}>{t("product.addToCart")}</Text>
             </TouchableOpacity>
           </View>
-
-          <TouchableOpacity
-            style={[gs.button, { opacity: (item.stock ?? 0) > 0 ? 1 : 0.5, paddingHorizontal: 16 }]}
-            onPress={handleAddToCart}
-            disabled={(item.stock ?? 0) <= 0}
-          >
-            <Ionicons name="cart" size={18} color={plate.background} style={{ marginRight: 6 }} />
-            <Text style={gs.buttonText}>{t("product.addToCart")}</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
     );
