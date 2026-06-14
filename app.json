@@ -1,13 +1,12 @@
 {
   "expo": {
     "name": "Barber Shop",
-    "slug": "barbers-shop",
+    "slug": "souqalhalaqeen",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/logo.png",
     "scheme": "barbersshop",
     "userInterfaceStyle": "automatic",
-
     "ios": {},
     "splash": {
       "image": "./assets/logo.png",
@@ -22,7 +21,8 @@
         "monochromeImage": "./assets/logo.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.rawadag.barbersshop"
+      "package": "com.rawadag.barbersshop",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {},
     "plugins": [
@@ -33,19 +33,23 @@
           "backgroundColor": "#121212",
           "android": {
             "image": "./assets/logo.png",
-            "imageWidth": 76
+            "imageWidth": 300
           }
         }
       ],
       "expo-localization",
       "expo-image",
       "expo-web-browser",
-      ["expo-build-properties", {
-        "android": {
-          "usesCleartextTraffic": true
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
         }
-      }],
-      "expo-font"
+      ],
+      "expo-font",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -54,7 +58,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c2aa8868-82fc-4c29-8cf2-f283a7b34a35"
+        "projectId": "28c84613-b6ec-42c0-bff2-cc774b86f0aa"
       }
     },
     "updates": {
@@ -66,6 +70,6 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "owner": "rawad-ag"
+    "owner": "souqalhalaqeen-organaization"
   }
 }

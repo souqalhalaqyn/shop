@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -52,7 +53,10 @@ export default function LoginScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <View style={{ alignItems: "center", marginBottom: 40 }}>
-        <Ionicons name="cut" size={64} color={plate.primary} />
+        <Image
+          source={require("@/assets/logo.png")}
+          style={{ width: 120, height: 120, resizeMode: "contain" }}
+        />
         <Text style={[gs.h1, { marginTop: 16 }]}>{t("application.name")}</Text>
       </View>
 
