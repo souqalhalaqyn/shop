@@ -1,4 +1,5 @@
 import { queryKeys, useApiQuery, type ApiResponse, type Container } from "@/api";
+import { useExchangeRate } from "@/context/ExchangeRateContext";
 import SearchBar from "@/components/Searchbar";
 import { useGlobalStyles } from "@/styles/global";
 import { buildImageUrl } from "@/utils/imageUrl";
@@ -28,28 +29,23 @@ export default function SearchScreen() {
   const { t } = useTranslation();
   const { q } = useLocalSearchParams<{ q?: string }>();
 
+  const { convert } = useExchangeRate();
   const [searchText, setSearchText] = useState(q ?? "");
   const [sort, setSort] = useState("relevance");
 
-  const hasQuery = (q ?? "").length > 0;
+  const hasQuery = (q ?? "").length > 0 || sort !== "relevance";
 
-  const searchResult = useApiQuery<ApiResponse<Container[]>>({
-    url: "search",
-    params: { q, sort },
-    queryKey: queryKeys.resource("search").list({ q, sort }),
-    enabled: hasQuery,
+  const params: Record<string, any> = { sort };
+  if (q) params.q = q;
+  if (!q && sort !== "relevance") params.q = "";
+  if (!q && sort === "relevance") params.limit = 50;
+
+  const { data, isLoading, isRefetching, refetch } = useApiQuery<ApiResponse<Container[]>>({
+    url: hasQuery ? "search" : "containers",
+    params,
+    queryKey: queryKeys.resource("search").list({ q: q ?? "", sort }),
+    enabled: true,
   });
-
-  const allContainers = useApiQuery<ApiResponse<Container[]>>({
-    url: "containers",
-    params: { limit: 50 },
-    queryKey: queryKeys.containers.list({ limit: 50 }),
-    enabled: !hasQuery,
-  });
-
-  const { data, isLoading, isRefetching, refetch } = hasQuery
-    ? searchResult
-    : allContainers;
 
   const containers = data?.data ?? [];
 
@@ -101,7 +97,7 @@ export default function SearchScreen() {
               <Text
                 style={[gs.caption, { color: plate.primary, marginTop: 2 }]}
               >
-                {((product as any).priceSY ?? product.price).toLocaleString()} SYP
+                {convert(product.price).toLocaleString()} SYP
               </Text>
             )}
           </View>

@@ -14,7 +14,12 @@
     "restartMessage": "يرجى إعادة تشغيل التطبيق لتطبيق تغييرات التخطيط",
     "ok": "حسناً",
     "categories": "الفئات",
-    "continueAsGuest": "المتابعة كزائر"
+    "continueAsGuest": "المتابعة كزائر",
+    "loadMore": "تحميل المزيد",
+    "success": "تم بنجاح",
+    "error": "خطأ",
+    "permissionRequired": "الإذن مطلوب",
+    "uploadError": "فشل الرفع"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -93,7 +98,11 @@
     "pending": "قيد الانتظار",
     "done": "تمت الموافقة",
     "cancelled": "ملغي",
-    "noRequests": "لا توجد طلبات شحن بعد"
+    "noRequests": "لا توجد طلبات شحن بعد",
+    "permissionRequired": "الإذن مطلوب للوصول إلى الصور",
+    "invalidAmount": "الرجاء إدخال مبلغ صالح",
+    "appNotInstalled": "تطبيق شام كاش غير مثبت. تم نسخ المعرف إلى الحافظة.",
+    "idCopied": "تم نسخ المعرف إلى الحافظة"
   },
 
   "product": {
@@ -146,13 +155,18 @@
     "confirmPurchase": "تأكيد الشراء",
     "deliveryLocation": "موقع التوصيل",
     "selectState": "اختر المحافظة",
-    "selectRegion": "اختر المنطقة في {name}",
+    "selectBranch": "اختر الفرع في {name}",
     "selectWay": "اختر شركة التوصيل في {name}",
     "enterAddress": "أدخل عنوان التوصيل في {name}",
     "confirmAddress": "تأكيد العنوان",
     "direct": "مباشر",
+    "directDelivery": "توصيل مباشر (إدخال العنوان)",
     "addressPlaceholder": "الشارع، المبنى، الطابق...",
-    "default": "افتراضي"
+    "addressHint": "سيتم إضافة اسم المحافظة تلقائياً",
+    "default": "افتراضي",
+    "lastLocation": "استخدام آخر موقع توصيل؟",
+    "useLastLocation": "استخدام آخر موقع",
+    "qty": "الكمية: {qty} - {price}"
   },
 
   "categories": {
@@ -183,5 +197,36 @@
     "insufficientBalance": "الرصيد غير كافٍ",
     "confirmBuy": "شراء هذا العرض بمبلغ {price}؟",
     "confirmBuyTitle": "تأكيد الشراء"
+  },
+  "ads": {
+    "listTitle": "الإعلانات",
+    "emptyList": "لا توجد إعلانات بعد",
+    "contactWhatsApp": "اتصل بنا على واتساب",
+    "createTitle": "إنشاء طلب إعلان",
+    "containerInfo": "معلومات الحاوية",
+    "productsInfo": "المنتجات",
+    "nextStep": "التالي",
+    "prevStep": "السابق",
+    "addProduct": "إضافة منتج",
+    "productLabel": "المنتج",
+    "submitButton": "إرسال",
+    "created": "تم إرسال طلب الإعلان",
+    "validationContainerRequired": "حقول الحاوية مطلوبة",
+    "validationProductRequired": "المنتج #{index} ينقصه حقول مطلوبة",
+    "historyTitle": "طلباتي",
+    "emptyHistory": "لا توجد طلبات بعد",
+    "createNew": "إنشاء طلب",
+    "statusPending": "قيد الانتظار",
+    "statusApproved": "تمت الموافقة",
+    "statusRejected": "مرفوض",
+    "rejectionReason": "السبب"
+  },
+  "update": {
+    "title": "تحديث متاح",
+    "description": "نسخة جديدة من التطبيق متاحة. يرجى تنزيل أحدث إصدار وإعادة التثبيت.",
+    "currentVersion": "النسخة الحالية",
+    "newVersion": "النسخة الجديدة",
+    "instructions": "بعد التنزيل، يرجى إلغاء تثبيت التطبيق القديم أولاً، ثم تثبيت ملف APK الجديد.",
+    "downloadButton": "تنزيل أحدث إصدار"
   }
 }

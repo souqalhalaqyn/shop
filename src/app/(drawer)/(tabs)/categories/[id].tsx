@@ -1,4 +1,5 @@
 import { Category, useInfiniteApiQuery } from "@/api";
+import { useExchangeRate } from "@/context/ExchangeRateContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useGlobalStyles } from "@/styles/global";
 import { buildImageUrl } from "@/utils/imageUrl";
@@ -18,6 +19,7 @@ export default function CategoryDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { gs, plate } = useGlobalStyles();
   const { t } = useTranslation();
+  const { convert } = useExchangeRate();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteApiQuery<Category>({
@@ -72,7 +74,7 @@ export default function CategoryDetail() {
               <Text
                 style={[gs.textBold, { color: plate.primary, marginTop: 4 }]}
               >
-                {((firstProduct as any).priceSY ?? firstProduct.price).toLocaleString()} SYP
+                {convert(firstProduct.price).toLocaleString()} SYP
               </Text>
             ) : null}
           </View>

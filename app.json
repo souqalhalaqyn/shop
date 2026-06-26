@@ -62,14 +62,20 @@
       }
     },
     "updates": {
-      "url": "https://u.expo.dev/c2aa8868-82fc-4c29-8cf2-f283a7b34a35",
+      "url": "https://u.expo.dev/28c84613-b6ec-42c0-bff2-cc774b86f0aa",
       "enabled": true,
       "fallbackToCacheTimeout": 0,
-      "checkAutomatically": "ON_LOAD"
+      "checkOnLaunch": "ALWAYS"
     },
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "owner": "souqalhalaqeen-organaization"
+    "owner": "souqalhalaqeen-organaization",
+    "developmentClient": {
+      "silentLaunch": false,
+      "android": {
+        "package": "com.rawadag.barbersshop.debug"
+      }
+    }
   }
 }

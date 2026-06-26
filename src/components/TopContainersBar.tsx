@@ -1,4 +1,5 @@
 import { queryKeys, useInfiniteApiQuery, type Container } from "@/api";
+import { useExchangeRate } from "@/context/ExchangeRateContext";
 import { buildImageUrl } from "@/utils/imageUrl";
 import { useGlobalStyles } from "@/styles/global";
 import { router } from "expo-router";
@@ -24,6 +25,7 @@ interface TopContainersBarProps {
 
 export default function TopContainersBar({ title }: TopContainersBarProps) {
   const { gs, plate } = useGlobalStyles();
+  const { convert } = useExchangeRate();
   const scrollRef = useRef<ScrollView>(null);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -103,7 +105,7 @@ export default function TopContainersBar({ title }: TopContainersBarProps) {
                 </Text>
                 {firstProduct ? (
                   <Text style={[styles.price, { color: plate.primary }]}>
-                    {((firstProduct as any).priceSY ?? firstProduct.price).toLocaleString()} SYP
+                    {convert(firstProduct.price).toLocaleString()} SYP
                   </Text>
                 ) : null}
               </View>

@@ -80,7 +80,6 @@ export default function MyOffer() {
         refreshControl={<RefreshControl refreshing={false} onRefresh={refetch} />}
         ListHeaderComponent={
           <View style={{ paddingHorizontal: 20 }}>
-            {/* Stats card */}
             <View style={[gs.card, { padding: 16 }]}>
               <View style={{ flexDirection: "row", gap: 12 }}>
                 {offer.product?.images?.[0] ? (

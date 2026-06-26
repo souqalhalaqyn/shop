@@ -84,31 +84,6 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="offers/index"
-        options={{
-          tabBarLabel: ({ focused, color }) =>
-            focused ? <Text style={{ color }} numberOfLines={1}>{t("navigation.offers")}</Text> : null,
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "pricetags" : "pricetags-outline"}
-              size={size}
-              color={color}
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="offers/[id]"
-        options={{ href: null, headerShown: false }}
-      />
-
-      <Tabs.Screen
-        name="offers/mine"
-        options={{ href: null, headerShown: false }}
-      />
-
-      <Tabs.Screen
         name="categories/[id]"
         options={{
           href: null,
@@ -134,6 +109,14 @@ export default function TabsLayout() {
 
       <Tabs.Screen
         name="search"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="location-picker"
         options={{
           href: null,
           headerShown: false,

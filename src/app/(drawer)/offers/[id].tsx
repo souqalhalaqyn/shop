@@ -60,7 +60,7 @@ export default function OfferDetail() {
       await client.post(`offers/${id}/buy`);
       Alert.alert("", t("offer.buySuccess"));
       refetch();
-      router.push("/(drawer)/(tabs)/offers/mine" as any);
+      router.push("/(drawer)/offers/mine" as any);
     } catch (err: any) {
       const msg = err?.response?.data?.message || t("offer.buyFailed");
       Alert.alert("", msg);
@@ -83,7 +83,6 @@ export default function OfferDetail() {
         <Ionicons name="arrow-back" size={24} color={plate.text} />
       </TouchableOpacity>
 
-      {/* Product image */}
       {offer.product?.images?.[0] ? (
         <Image
           source={{ uri: buildImageUrl(offer.product.images[0]) }}
@@ -99,7 +98,6 @@ export default function OfferDetail() {
       <Text style={[gs.h1, { marginTop: 16 }]}>{offer.product.name}</Text>
       <Text style={[gs.textSmall, { marginTop: 4 }]}>{offer.container?.name}</Text>
 
-      {/* Price breakdown */}
       <View style={[gs.cardElevated, { padding: 16, marginTop: 20, gap: 8 }]}>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Text style={gs.label}>{t("offer.offerPrice")}</Text>
@@ -115,12 +113,10 @@ export default function OfferDetail() {
         </View>
       </View>
 
-      {/* Product details */}
       {offer.product.longDescription ? (
         <Text style={[gs.text, { marginTop: 16 }]}>{offer.product.longDescription}</Text>
       ) : null}
 
-      {/* Tags */}
       {offer.product.tags && offer.product.tags.length > 0 ? (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
           {offer.product.tags.map((tag, i) => (
@@ -131,7 +127,6 @@ export default function OfferDetail() {
         </View>
       ) : null}
 
-      {/* Expected earnings */}
       <View style={[gs.card, { padding: 16, marginTop: 20, backgroundColor: plate.green + "15" }]}>
         <Text style={[gs.h3, { color: plate.green }]}>
           {(buyerProfitPerUnit * offer.totalQuantity).toFixed(2)} SYP {t("offer.totalProfit")}
@@ -139,7 +134,6 @@ export default function OfferDetail() {
         <Text style={gs.caption}>at {buyerProfitPerUnit.toFixed(2)}/unit after {offer.commissionPercent}% commission</Text>
       </View>
 
-      {/* Buy button */}
       <TouchableOpacity
         style={[gs.button, { marginTop: 24, opacity: offer.status !== "available" ? 0.5 : 1 }]}
         onPress={handleBuy}

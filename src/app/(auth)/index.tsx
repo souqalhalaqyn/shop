@@ -1,5 +1,5 @@
-import { useAuth } from "@/context/AuthContext";
 import PhoneInput from "@/components/PhoneInput";
+import { useAuth } from "@/context/AuthContext";
 import { useGlobalStyles } from "@/styles/global";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -60,9 +60,7 @@ export default function LoginScreen() {
         <Text style={[gs.h1, { marginTop: 16 }]}>{t("application.name")}</Text>
       </View>
 
-      <Text style={[gs.h2, { marginBottom: 8 }]}>
-        {t("auth.loginTitle")}
-      </Text>
+      <Text style={[gs.h2, { marginBottom: 8 }]}>{t("auth.loginTitle")}</Text>
       <Text style={[gs.textSmall, { marginBottom: 24 }]}>
         {t("auth.enterPhone")}
       </Text>
@@ -111,7 +109,9 @@ export default function LoginScreen() {
         style={{ marginTop: 12, alignItems: "center" }}
         onPress={() => router.push("/(drawer)" as any)}
       >
-        <Text style={{ color: plate.graySecond }}>{t("common.continueAsGuest")}</Text>
+        <Text style={{ color: plate.graySecond }}>
+          {t("common.continueAsGuest")}
+        </Text>
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );

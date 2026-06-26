@@ -110,11 +110,18 @@ export default function DrawerLayout() {
           drawerLabel: t("navigation.home"),
           title: t("navigation.home"),
           drawerIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "home" : "home-outline"}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? "home" : "home-outline"} size={size} color={color} />
+          ),
+        }}
+      />
+
+      <Drawer.Screen
+        name="offers"
+        options={{
+          drawerLabel: t("navigation.offers"),
+          title: t("navigation.offers"),
+          drawerIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? "pricetags" : "pricetags-outline"} size={size} color={color} />
           ),
         }}
       />
@@ -125,11 +132,7 @@ export default function DrawerLayout() {
           drawerLabel: t("navigation.ads"),
           title: t("navigation.ads"),
           drawerIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "pricetag" : "pricetag-outline"}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? "megaphone" : "megaphone-outline"} size={size} color={color} />
           ),
         }}
       />
@@ -140,11 +143,7 @@ export default function DrawerLayout() {
           drawerLabel: t("navigation.shops"),
           title: t("navigation.shops"),
           drawerIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "storefront" : "storefront-outline"}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? "storefront" : "storefront-outline"} size={size} color={color} />
           ),
         }}
       />
@@ -155,11 +154,7 @@ export default function DrawerLayout() {
           drawerLabel: t("navigation.settings"),
           title: t("navigation.settings"),
           drawerIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name={focused ? "settings" : "settings-outline"}
-              size={size}
-              color={color}
-            />
+            <Ionicons name={focused ? "settings" : "settings-outline"} size={size} color={color} />
           ),
         }}
       />

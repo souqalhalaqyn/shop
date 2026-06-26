@@ -1,5 +1,6 @@
 import { getApiClient, queryKeys, useApiQuery, type ApiResponse } from "@/api";
 import { useAuth } from "@/context/AuthContext";
+import { useExchangeRate } from "@/context/ExchangeRateContext";
 import { useGlobalStyles } from "@/styles/global";
 import { buildImageUrl } from "@/utils/imageUrl";
 import { Ionicons } from "@expo/vector-icons";
@@ -52,6 +53,7 @@ export default function OrdersScreen() {
   const { gs, plate } = useGlobalStyles();
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
+  const { convert } = useExchangeRate();
   const queryClient = useQueryClient();
   const [cancelling, setCancelling] = useState<string | null>(null);
 
@@ -163,7 +165,7 @@ export default function OrdersScreen() {
               {orderItem.name}
             </Text>
             <Text style={[gs.caption, { color: plate.textSecond }]}>
-              {t("orders.qty")}: {orderItem.quantity} × {orderItem.price.toFixed(2)} SYP
+              {t("orders.qty")}: {orderItem.quantity} × {convert(orderItem.price).toLocaleString()} SYP
             </Text>
           </View>
         </View>
@@ -183,7 +185,7 @@ export default function OrdersScreen() {
           ) : null}
         </View>
         <Text style={[gs.textBold, { color: plate.primary }]}>
-          {item.total.toFixed(2)} SYP
+          {convert(item.total).toLocaleString()} SYP
         </Text>
       </View>
 

@@ -2,7 +2,10 @@ import { ApiProvider, getApiClient } from "@/api";
 import { useAuth, AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { AppThemeProvider, useAppTheme } from "@/context/ThemeContext";
+import { ExchangeRateProvider } from "@/context/ExchangeRateContext";
 import { initI18n } from "@/i18n";
+import { APP_VERSION } from "@/config/constants";
+import UpdateScreen from "@/components/UpdateScreen";
 import { ThemeProvider } from "@react-navigation/native";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
@@ -16,6 +19,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -54,8 +59,8 @@ async function registerForPushNotificationsAsync() {
 function InnerLayout() {
   const { theme } = useAppTheme();
   const { isAuthenticated, isLoading } = useAuth();
-  const notificationListenerRef = useRef<Notifications.Subscription>();
-  const responseListenerRef = useRef<Notifications.Subscription>();
+  const notificationListenerRef = useRef<Notifications.Subscription | null>(null);
+  const responseListenerRef = useRef<Notifications.Subscription | null>(null);
 
   useEffect(() => {
     if (isLoading || !isAuthenticated) return;
@@ -97,19 +102,45 @@ function InnerLayout() {
   );
 }
 
+function isNewerVersion(remote: string, local: string): boolean {
+  const r = remote.split(".").map(Number);
+  const l = local.split(".").map(Number);
+  for (let i = 0; i < Math.max(r.length, l.length); i++) {
+    if ((r[i] ?? 0) > (l[i] ?? 0)) return true;
+    if ((r[i] ?? 0) < (l[i] ?? 0)) return false;
+  }
+  return false;
+}
+
 export default function RootLayout() {
   const [ready, setReady] = useState(false);
+  const [updateInfo, setUpdateInfo] = useState<{ version: string; url: string } | null>(null);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
     initI18n().then(() => setReady(true));
   }, []);
 
-  if (!ready) {
+  useEffect(() => {
+    if (!ready) return;
+    getApiClient().get("app-versions").then((res) => {
+      const remote = res.data?.data?.shop;
+      if (remote && isNewerVersion(remote.version, APP_VERSION)) {
+        setUpdateInfo(remote);
+      }
+    }).catch(() => {}).finally(() => setChecking(false));
+  }, [ready]);
+
+  if (!ready || checking) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fff" }}>
+        <ActivityIndicator size="large" color="#FBBF24" />
       </View>
     );
+  }
+
+  if (updateInfo) {
+    return <UpdateScreen currentVersion={APP_VERSION} newVersion={updateInfo.version} downloadUrl={updateInfo.url} />;
   }
 
   return (
@@ -117,7 +148,9 @@ export default function RootLayout() {
       <AuthProvider>
         <AppThemeProvider>
           <CartProvider>
-            <InnerLayout />
+            <ExchangeRateProvider>
+              <InnerLayout />
+            </ExchangeRateProvider>
           </CartProvider>
         </AppThemeProvider>
       </AuthProvider>

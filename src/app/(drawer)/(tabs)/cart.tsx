@@ -1,13 +1,15 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getApiClient, queryKeys, useApiQuery, type ApiResponse } from "@/api";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
-import LocationPicker, { type SelectedLocation } from "@/components/LocationPicker";
+import { useExchangeRate } from "@/context/ExchangeRateContext";
+import { type SelectedLocation } from "@/components/LocationPicker";
 import { useGlobalStyles } from "@/styles/global";
 import { buildImageUrl } from "@/utils/imageUrl";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
-import { router } from "expo-router";
-import { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -15,6 +17,7 @@ import {
   FlatList,
   Image,
   Modal,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
@@ -41,9 +44,9 @@ export default function CartScreen() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
+  const { convert } = useExchangeRate();
   const [showPurchase, setShowPurchase] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   const { data: locData, isLoading: locLoading } = useApiQuery<ApiResponse<LocationData>>({
     url: "auth/locations",
@@ -58,24 +61,49 @@ export default function CartScreen() {
   const [customAddress, setCustomAddress] = useState("");
   const [saveName, setSaveName] = useState("");
   const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [showLastLocationPrompt, setShowLastLocationPrompt] = useState(false);
 
   const [pendingLocation, setPendingLocation] = useState<SelectedLocation | null>(null);
+  const [lastLocation, setLastLocation] = useState<SelectedLocation | null>(null);
 
-  const openPurchase = () => {
+  const { loc: locParam } = useLocalSearchParams<{ loc?: string }>();
+  useEffect(() => {
+    if (locParam) {
+      try {
+        const parsed = JSON.parse(locParam) as SelectedLocation;
+        setPendingLocation(parsed);
+        setCustomAddress(parsed.address);
+        setSelectedLocation("");
+        router.setParams({ loc: undefined });
+      } catch { /* ignore */ }
+    }
+  }, [locParam]);
+
+  const LAST_LOCATION_KEY = "@barbers-shop:lastLocation";
+
+  const openPurchase = async () => {
     if (!isAuthenticated) {
       router.push("/(auth)");
       return;
     }
     setSelectedLocation(defaultLocation);
     setCustomAddress("");
+    const stored = await AsyncStorage.getItem(LAST_LOCATION_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as SelectedLocation;
+        setLastLocation(parsed);
+        setShowLastLocationPrompt(true);
+      } catch { /* ignore */ }
+    }
     setShowPurchase(true);
   };
 
   const handleLocationPicked = async (loc: SelectedLocation) => {
     setPendingLocation(loc);
     setCustomAddress(loc.address);
-    setShowLocationPicker(false);
-    setShowSavePrompt(true);
+    setShowSavePrompt(false);
+    setSelectedLocation("");
   };
 
   const handleSaveNewLocation = async () => {
@@ -86,8 +114,8 @@ export default function CartScreen() {
         name: saveName.trim(),
         address: customAddress.trim(),
         state: pendingLocation?.state,
-        region: pendingLocation?.region,
         way: pendingLocation?.way,
+        branch: pendingLocation?.branch,
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.auth.locations() });
       setSelectedLocation(saveName.trim());
@@ -99,9 +127,28 @@ export default function CartScreen() {
   };
 
   const handlePurchase = async () => {
-    const address = selectedLocation
-      ? locations.find((l) => l.name === selectedLocation)?.address ?? ""
-      : customAddress.trim();
+    let address = "";
+    let locationType = "direct";
+    let state: string | undefined;
+    let way: string | undefined;
+    let branch: string | undefined;
+
+    if (pendingLocation) {
+      address = pendingLocation.address;
+      locationType = pendingLocation.branch ? "branch" : "direct";
+      state = pendingLocation.state;
+      way = pendingLocation.way;
+      branch = pendingLocation.branch;
+    } else if (selectedLocation) {
+      const loc = locations.find((l) => l.name === selectedLocation);
+      address = loc?.address ?? "";
+      state = loc?.state;
+      way = loc?.way;
+      branch = (loc as any)?.branch;
+      if (branch) locationType = "branch";
+    } else {
+      address = customAddress.trim();
+    }
 
     if (!address) {
       Alert.alert("", t("cart.deliveryAddress"));
@@ -111,15 +158,22 @@ export default function CartScreen() {
     setSubmitting(true);
     try {
       const client = getApiClient();
-      const payload = {
+      const payload: Record<string, any> = {
         items: items.map((i) => ({
           containerId: i.containerId,
           productIndex: i.productIndex,
           quantity: i.quantity,
         })),
         location: address,
+        locationType,
       };
+      if (state) payload.state = state;
+      if (way) payload.way = way;
+      if (branch) payload.branch = branch;
       await client.post("orders", payload);
+      if (pendingLocation) {
+        await AsyncStorage.setItem(LAST_LOCATION_KEY, JSON.stringify(pendingLocation));
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
       clearCart();
       setShowPurchase(false);
@@ -142,7 +196,7 @@ export default function CartScreen() {
       />
       <View style={{ flex: 1, justifyContent: "center" }}>
         <Text style={gs.label} numberOfLines={1}>{item.name}</Text>
-        <Text style={[gs.caption, { color: plate.primary, marginTop: 2 }]}>{(item as any).priceSY ?? item.price} SYP</Text>
+        <Text style={[gs.caption, { color: plate.primary, marginTop: 2 }]}>{convert(item.price)} SYP</Text>
         <View style={[gs.containerRow, { marginTop: 6, gap: 0 }]}>
           <TouchableOpacity
             onPress={() => updateQuantity(item.containerId, item.productIndex, item.quantity - 1)}
@@ -196,7 +250,7 @@ export default function CartScreen() {
             }}
           >
             <View style={gs.rowBetween}>
-              <Text style={gs.h2}>{t("cart.total")}: {total.toLocaleString()} SYP</Text>
+              <Text style={gs.h2}>{t("cart.total")}: {convert(total).toLocaleString()} SYP</Text>
               <TouchableOpacity style={gs.button} onPress={openPurchase}>
                 <Text style={gs.buttonText}>{t("cart.purchase")}</Text>
               </TouchableOpacity>
@@ -219,17 +273,41 @@ export default function CartScreen() {
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
               padding: 24,
-              maxHeight: "80%",
+              maxHeight: "90%",
             }}
           >
             <View style={gs.rowBetween}>
               <Text style={gs.h2}>{t("cart.deliveryAddress")}</Text>
-              <TouchableOpacity onPress={() => setShowLocationPicker(true)}>
+              <TouchableOpacity onPress={() => router.push("/(drawer)/(tabs)/location-picker")}>
                 <Text style={{ color: plate.primary }}>{t("cart.browseLocations")}</Text>
               </TouchableOpacity>
             </View>
 
-            {locLoading ? (
+            <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
+            {lastLocation && showLastLocationPrompt ? (
+              <View style={[gs.cardFlat, { padding: 12, marginTop: 16, borderWidth: 1, borderColor: plate.primary }]}>
+                <Text style={[gs.label, { marginBottom: 4 }]}>{t("cart.lastLocation")}</Text>
+                <Text style={gs.caption}>{lastLocation.address}</Text>
+                <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
+                  <TouchableOpacity
+                    style={[gs.buttonOutline, { flex: 1 }]}
+                    onPress={() => { setShowLastLocationPrompt(false); setLastLocation(null); }}
+                  >
+                    <Text style={gs.buttonTextSecondary}>{t("common.cancel")}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[gs.button, { flex: 1 }]}
+                    onPress={() => {
+                      setPendingLocation(lastLocation);
+                      setCustomAddress(lastLocation.address);
+                      setShowLastLocationPrompt(false);
+                    }}
+                  >
+                    <Text style={gs.buttonText}>{t("cart.useLastLocation")}</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ) : locLoading ? (
               <ActivityIndicator size="small" color={plate.primary} style={{ marginTop: 20 }} />
             ) : (
               <>
@@ -276,23 +354,6 @@ export default function CartScreen() {
                   </View>
                 )}
 
-                <Text style={[gs.label, { marginTop: 16 }]}>
-                  {t("cart.orEnterAddress")}
-                </Text>
-                <View style={[gs.inputContainer, { marginTop: 6 }]}>
-                  <TextInput
-                    style={gs.input}
-                    value={customAddress}
-                    onChangeText={(v) => {
-                      setCustomAddress(v);
-                      if (v.trim()) setSelectedLocation("");
-                    }}
-                    placeholder={t("cart.addressPlaceholder")}
-                    placeholderTextColor={plate.graySecond}
-                    multiline
-                  />
-                </View>
-
                 <View style={{ flexDirection: "row", gap: 12, marginTop: 20 }}>
                   <TouchableOpacity
                     style={[gs.buttonDanger, { flex: 1 }]}
@@ -308,21 +369,16 @@ export default function CartScreen() {
                     {submitting ? (
                       <ActivityIndicator color={plate.background} />
                     ) : (
-                      <Text style={gs.buttonText}>{t("cart.confirmPurchase")} ({total.toLocaleString()} SYP)</Text>
+                      <Text style={gs.buttonText}>{t("cart.confirmPurchase")} ({convert(total).toLocaleString()} SYP)</Text>
                     )}
                   </TouchableOpacity>
                 </View>
               </>
             )}
+            </ScrollView>
           </View>
         </View>
       </Modal>
-
-      <LocationPicker
-        visible={showLocationPicker}
-        onClose={() => setShowLocationPicker(false)}
-        onSelect={handleLocationPicked}
-      />
 
       <Modal visible={showSavePrompt} transparent animationType="fade">
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", padding: 32 }}>

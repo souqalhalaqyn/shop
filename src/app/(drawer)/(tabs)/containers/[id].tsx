@@ -1,10 +1,11 @@
-import { useApiQuery, type ApiResponse, type Container, type ContainerProduct } from "@/api";
+import { useApiQuery, useInfiniteApiQuery, type ApiResponse, type Container, type ContainerProduct } from "@/api";
 import { useCart } from "@/context/CartContext";
+import { useExchangeRate } from "@/context/ExchangeRateContext";
 import { buildImageUrl } from "@/utils/imageUrl";
 import { useGlobalStyles } from "@/styles/global";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -28,8 +29,10 @@ export default function ContainerDetail() {
   const [qty, setQty] = useState(1);
   const scrollRef = useRef<FlatList>(null);
 
+  const { convert } = useExchangeRate();
   const [productPage, setProductPage] = useState(0);
   const [imageIndices, setImageIndices] = useState<Record<number, number>>({});
+  const [isSwipingImage, setIsSwipingImage] = useState(false);
 
   const { data: containerData, isLoading: containerLoading } = useApiQuery<ApiResponse<Container>>({
     url: `containers/${id}`,
@@ -49,6 +52,19 @@ export default function ContainerDetail() {
   const products = productsData?.data ?? [];
   const product = products[productPage];
   const images = product?.images ?? [];
+
+  const relatedQuery = container?.brand?.name ?? "";
+  const { data: relatedData, fetchNextPage: fetchRelated, hasNextPage: hasMoreRelated, isFetchingNextPage: fetchingRelated } = useInfiniteApiQuery<Container[]>({
+    url: "search",
+    queryKey: ["api", "search", "related", id!, relatedQuery],
+    params: { q: relatedQuery, limit: 10, sort: "relevance" },
+    enabled: !!id && relatedQuery.length > 0,
+  });
+
+  const relatedProducts = (relatedData?.pages.flatMap((p) => p.data as any) ?? [])
+    .flatMap((c: any) => c.products ?? [])
+    .filter((p: any) => p.productIndex !== productPage || p._id !== products[productPage]?._id)
+    .slice(0, 50);
   if (containerLoading || productsLoading) {
     return (
       <View style={[gs.container, gs.centered]}>
@@ -96,11 +112,16 @@ export default function ContainerDetail() {
         showsVerticalScrollIndicator={false}
       >
         {prodImages.length > 0 ? (
-          <View>
+          <View
+            onTouchStart={() => setIsSwipingImage(true)}
+            onTouchEnd={() => setIsSwipingImage(false)}
+            onTouchCancel={() => setIsSwipingImage(false)}
+          >
             <ScrollView
               horizontal
               pagingEnabled
               showsHorizontalScrollIndicator={false}
+              nestedScrollEnabled
               onMomentumScrollEnd={(e) => {
                 const idx = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40));
                 handleImageChange(productPage, idx);
@@ -141,7 +162,7 @@ export default function ContainerDetail() {
           <Text style={[gs.h2, { flex: 1 }]}>{item.name}</Text>
           <View style={{ alignItems: "flex-end" }}>
             <Text style={[gs.h1, { color: plate.primary }]}>
-              {(item as any).priceSY?.toLocaleString() ?? (item.price?.toFixed(2) ?? "0")} SYP
+              {convert(item.price ?? 0).toLocaleString()} SYP
             </Text>
             {item.stock > 0 ? (
               <View style={[gs.badge, { backgroundColor: plate.green, marginTop: 4 }]}>
@@ -209,6 +230,52 @@ export default function ContainerDetail() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {relatedProducts.length > 0 ? (
+          <View style={{ marginTop: 24 }}>
+            <Text style={[gs.h2, { marginBottom: 12 }]}>{t("product.relatedProducts")}</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+              {relatedProducts.map((sp: any, i: number) => (
+                <TouchableOpacity
+                  key={i}
+                  style={[gs.cardFlat, { width: (SCREEN_WIDTH - 50) / 2, overflow: "hidden" }]}
+                  onPress={() => {
+                    const idx = products.findIndex((p: any) => p.productIndex === sp.productIndex);
+                    if (idx >= 0) {
+                      scrollRef.current?.scrollToIndex({ index: idx, animated: true });
+                    }
+                  }}
+                >
+                  {sp.images?.[0] ? (
+                    <Image source={{ uri: buildImageUrl(sp.images[0]) }} style={{ width: "100%", height: 120 }} resizeMode="cover" />
+                  ) : (
+                    <View style={{ width: "100%", height: 120, backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }}>
+                      <Ionicons name="image-outline" size={32} color={plate.textSecond} />
+                    </View>
+                  )}
+                  <View style={{ padding: 8 }}>
+                    <Text style={gs.caption} numberOfLines={2}>{sp.name}</Text>
+                    <Text style={[gs.textBold, { color: plate.primary, marginTop: 4 }]}>
+                      {convert(sp.price ?? 0).toLocaleString()} SYP
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+              {hasMoreRelated && (
+                <TouchableOpacity
+                  style={{ width: "100%", padding: 12, alignItems: "center" }}
+                  onPress={() => fetchRelated()}
+                >
+                  {fetchingRelated ? (
+                    <ActivityIndicator size="small" color={plate.primary} />
+                  ) : (
+                    <Text style={{ color: plate.primary }}>{t("common.loadMore")}</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        ) : null}
       </ScrollView>
     );
   };
@@ -249,6 +316,7 @@ export default function ContainerDetail() {
         data={products}
         horizontal
         pagingEnabled
+        scrollEnabled={!isSwipingImage}
         showsHorizontalScrollIndicator={false}
         keyExtractor={(_, i) => String(i)}
         initialScrollIndex={0}

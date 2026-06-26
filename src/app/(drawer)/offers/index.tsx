@@ -67,7 +67,7 @@ export default function OffersList() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={[gs.card, { padding: 16, marginBottom: 12 }]}
-            onPress={() => (router.push as any)(`/(drawer)/(tabs)/offers/${item._id}`)}
+            onPress={() => (router.push as any)(`/(drawer)/offers/${item._id}`)}
           >
             <View style={{ flexDirection: "row", gap: 12 }}>
               {item.product?.images?.[0] ? (
@@ -95,7 +95,7 @@ export default function OffersList() {
             <View style={{ marginTop: 16 }}>
               <TouchableOpacity
                 style={[gs.button, { backgroundColor: plate.backgroundSecond }]}
-                onPress={() => (router.push as any)("/(drawer)/(tabs)/offers/mine")}
+                onPress={() => (router.push as any)("/(drawer)/offers/mine")}
               >
                 <Ionicons name="receipt-outline" size={20} color={plate.primary} style={{ marginRight: 8 }} />
                 <Text style={[gs.buttonText, { color: plate.primary }]}>{t("offer.myOffer")}</Text>

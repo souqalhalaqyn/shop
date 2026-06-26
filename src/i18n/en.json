@@ -14,7 +14,12 @@
     "restartMessage": "Please restart the app to apply layout changes",
     "ok": "OK",
     "categories": "Categories",
-    "continueAsGuest": "Continue as Guest"
+    "continueAsGuest": "Continue as Guest",
+    "loadMore": "Load More",
+    "success": "Success",
+    "error": "Error",
+    "permissionRequired": "Permission Required",
+    "uploadError": "Upload failed"
   },
 
   "navigation": {
@@ -98,7 +103,11 @@
     "pending": "Pending",
     "done": "Approved",
     "cancelled": "Cancelled",
-    "noRequests": "No charge requests yet"
+    "noRequests": "No charge requests yet",
+    "permissionRequired": "Permission required to access photos",
+    "invalidAmount": "Please enter a valid amount",
+    "appNotInstalled": "Sham Cash app is not installed. Merchant ID copied to clipboard.",
+    "idCopied": "Merchant ID copied to clipboard"
   },
 
   "product": {
@@ -154,13 +163,18 @@
     "confirmPurchase": "Confirm Purchase",
     "deliveryLocation": "Delivery Location",
     "selectState": "Select State",
-    "selectRegion": "Select Region in {name}",
+    "selectBranch": "Select Branch in {name}",
     "selectWay": "Select Delivery Company in {name}",
     "enterAddress": "Enter Delivery Address in {name}",
     "confirmAddress": "Confirm Address",
     "direct": "Direct",
+    "directDelivery": "Direct Delivery (enter address)",
     "addressPlaceholder": "Street, building, floor, apartment",
-    "default": "Default"
+    "addressHint": "The state name will be added automatically as a prefix",
+    "default": "Default",
+    "lastLocation": "Use last delivery location?",
+    "useLastLocation": "Use Last Location",
+    "qty": "Qty: {qty} - {price}"
   },
 
   "categories": {
@@ -191,5 +205,36 @@
     "insufficientBalance": "Insufficient balance",
     "confirmBuy": "Buy this offer for {price}?",
     "confirmBuyTitle": "Confirm Purchase"
+  },
+  "ads": {
+    "listTitle": "Ads",
+    "emptyList": "No ads yet",
+    "contactWhatsApp": "Contact us on WhatsApp",
+    "createTitle": "Create Ad Request",
+    "containerInfo": "Container Information",
+    "productsInfo": "Products",
+    "nextStep": "Next",
+    "prevStep": "Previous",
+    "addProduct": "Add Product",
+    "productLabel": "Product",
+    "submitButton": "Submit",
+    "created": "Ad request submitted",
+    "validationContainerRequired": "Container fields required",
+    "validationProductRequired": "Product #{index} is missing required fields",
+    "historyTitle": "My Requests",
+    "emptyHistory": "No requests yet",
+    "createNew": "Create Request",
+    "statusPending": "Pending",
+    "statusApproved": "Approved",
+    "statusRejected": "Rejected",
+    "rejectionReason": "Reason"
+  },
+  "update": {
+    "title": "Update Available",
+    "description": "A new version of the app is available. Please download the latest version and reinstall.",
+    "currentVersion": "Current Version",
+    "newVersion": "New Version",
+    "instructions": "After downloading, please uninstall the old app first, then install the new APK file.",
+    "downloadButton": "Download Latest Version"
   }
 }

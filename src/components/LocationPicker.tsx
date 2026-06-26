@@ -8,37 +8,35 @@ import {
   Modal,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 
+interface Branch {
+  _id: string;
+  name: string;
+}
+
 interface Way {
   _id: string;
   name: string;
-  deliveryCompany: string;
+  branches: Branch[];
 }
 
-interface Region {
+interface State {
   _id: string;
   name: string;
   isDirectDelivery: boolean;
   ways: Way[];
 }
 
-interface State {
-  _id: string;
-  name: string;
-  regions: Region[];
-}
-
 export interface SelectedLocation {
   state?: string;
   stateName?: string;
-  region?: string;
-  regionName?: string;
   way?: string;
   wayName?: string;
+  branch?: string;
+  branchName?: string;
   address: string;
 }
 
@@ -52,9 +50,8 @@ export default function LocationPicker({ visible, onClose, onSelect }: LocationP
   const { gs, plate } = useGlobalStyles();
   const { t } = useTranslation();
   const [selectedState, setSelectedState] = useState<State | null>(null);
-  const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
-  const [directAddress, setDirectAddress] = useState("");
-  const [step, setStep] = useState<"state" | "region" | "way" | "address">("state");
+  const [selectedWay, setSelectedWay] = useState<Way | null>(null);
+  const [step, setStep] = useState<"state" | "way" | "branch">("state");
 
   const { data: treeData, isLoading } = useApiQuery<ApiResponse<State[]>>({
     url: "locations/tree",
@@ -66,8 +63,7 @@ export default function LocationPicker({ visible, onClose, onSelect }: LocationP
 
   const reset = () => {
     setSelectedState(null);
-    setSelectedRegion(null);
-    setDirectAddress("");
+    setSelectedWay(null);
     setStep("state");
   };
 
@@ -77,63 +73,57 @@ export default function LocationPicker({ visible, onClose, onSelect }: LocationP
   };
 
   const goBack = () => {
-    if (step === "region") { setStep("state"); setSelectedState(null); }
-    else if (step === "way") { setStep("region"); setSelectedRegion(null); }
-    else if (step === "address") { setStep("region"); setSelectedRegion(null); }
+    if (step === "way") { setStep("state"); setSelectedState(null); }
+    else if (step === "branch") { setStep("way"); setSelectedWay(null); }
   };
 
   const handleSelectState = (s: State) => {
     setSelectedState(s);
-    if (s.regions.length === 1) {
-      setSelectedRegion(s.regions[0]!);
-      if (s.regions[0]!.ways.length === 1 && !s.regions[0]!.isDirectDelivery) {
-        handleConfirm(s, s.regions[0]!, s.regions[0]!.ways[0]!, "");
-      } else if (s.regions[0]!.isDirectDelivery) {
-        setStep("address");
+    if (s.ways.length === 0) {
+      handleConfirm(s, null, null);
+    } else if (s.ways.length === 1 && !s.isDirectDelivery) {
+      setSelectedWay(s.ways[0]!);
+      if (s.ways[0]!.branches.length === 0) {
+        handleConfirm(s, s.ways[0]!, null);
+      } else if (s.ways[0]!.branches.length === 1) {
+        handleConfirm(s, s.ways[0]!, s.ways[0]!.branches[0]!);
       } else {
-        setStep("way");
+        setStep("branch");
       }
-    } else {
-      setStep("region");
-    }
-  };
-
-  const handleSelectRegion = (r: Region) => {
-    setSelectedRegion(r);
-    if (r.isDirectDelivery) {
-      setStep("address");
-    } else if (r.ways.length === 1) {
-      handleConfirm(selectedState!, r, r.ways[0]!, "");
     } else {
       setStep("way");
     }
   };
 
   const handleSelectWay = (w: Way) => {
-    handleConfirm(selectedState!, selectedRegion!, w, "");
+    setSelectedWay(w);
+    if (w.branches.length === 0) {
+      handleConfirm(selectedState!, w, null);
+    } else if (w.branches.length === 1) {
+      handleConfirm(selectedState!, w, w.branches[0]!);
+    } else {
+      setStep("branch");
+    }
   };
 
-  const handleConfirm = (
-    s: State,
-    r: Region,
-    w: Way | null,
-    addr: string,
-  ) => {
+  const handleSelectBranch = (b: Branch) => {
+    handleConfirm(selectedState!, selectedWay!, b);
+  };
+
+  const handleConfirm = (s: State, w: Way | null, b: Branch | null) => {
+    const parts = [s.name];
+    if (w) parts.push(w.name);
+    if (b) parts.push(b.name);
     onSelect({
       state: s._id,
       stateName: s.name,
-      region: r._id,
-      regionName: r.name,
       way: w?._id,
       wayName: w?.name,
-      address: addr || (w ? `${w.deliveryCompany} - ${w.name}` : ""),
+      branch: b?._id,
+      branchName: b?.name,
+      address: parts.join(" - "),
     });
     reset();
-  };
-
-  const handleDirectAddress = () => {
-    if (!directAddress.trim()) return;
-    handleConfirm(selectedState!, selectedRegion!, null, directAddress.trim());
   };
 
   if (isLoading) {
@@ -151,7 +141,7 @@ export default function LocationPicker({ visible, onClose, onSelect }: LocationP
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" }}>
-        <View style={{ backgroundColor: plate.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, maxHeight: "80%" }}>
+        <View style={{ backgroundColor: plate.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, paddingBottom: 40, maxHeight: "80%" }}>
           <View style={gs.rowBetween}>
             <View style={gs.containerRow}>
               {step !== "state" && (
@@ -178,25 +168,7 @@ export default function LocationPicker({ visible, onClose, onSelect }: LocationP
                   >
                     <Ionicons name="location-outline" size={20} color={plate.primary} />
                     <Text style={gs.label}>{s.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </>
-          )}
-
-          {step === "region" && selectedState && (
-            <>
-              <Text style={[gs.label, { marginTop: 16, marginBottom: 8 }]}>{t("cart.selectRegion", { name: selectedState.name })}</Text>
-              <ScrollView>
-                {selectedState.regions.map((r) => (
-                  <TouchableOpacity
-                    key={r._id}
-                    style={[gs.cardFlat, { padding: 14, marginBottom: 8, flexDirection: "row", alignItems: "center", gap: 10 }]}
-                    onPress={() => handleSelectRegion(r)}
-                  >
-                    <Ionicons name="map-outline" size={20} color={plate.primary} />
-                    <Text style={gs.label}>{r.name}</Text>
-                    {r.isDirectDelivery && (
+                    {s.isDirectDelivery && (
                       <Text style={[gs.caption, { color: plate.green, marginLeft: "auto" }]}>{t("cart.direct")}</Text>
                     )}
                   </TouchableOpacity>
@@ -205,50 +177,48 @@ export default function LocationPicker({ visible, onClose, onSelect }: LocationP
             </>
           )}
 
-          {step === "way" && selectedRegion && (
+          {step === "way" && selectedState && (
             <>
-              <Text style={[gs.label, { marginTop: 16, marginBottom: 8 }]}>{t("cart.selectWay", { name: selectedRegion.name })}</Text>
+              <Text style={[gs.label, { marginTop: 16, marginBottom: 8 }]}>{t("cart.selectWay", { name: selectedState.name })}</Text>
               <ScrollView>
-                {selectedRegion.ways.map((w) => (
+                {selectedState.isDirectDelivery && (
+                  <TouchableOpacity
+                    style={[gs.cardFlat, { padding: 14, marginBottom: 8, flexDirection: "row", alignItems: "center", gap: 10, borderColor: plate.green, borderWidth: 1 }]}
+                    onPress={() => handleConfirm(selectedState, null, null)}
+                  >
+                    <Ionicons name="location-outline" size={20} color={plate.green} />
+                    <Text style={gs.label}>{t("cart.directDelivery")}</Text>
+                  </TouchableOpacity>
+                )}
+                {selectedState.ways.map((w) => (
                   <TouchableOpacity
                     key={w._id}
                     style={[gs.cardFlat, { padding: 14, marginBottom: 8, flexDirection: "row", alignItems: "center", gap: 10 }]}
                     onPress={() => handleSelectWay(w)}
                   >
                     <Ionicons name="car-outline" size={20} color={plate.primary} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={gs.label}>{w.name}</Text>
-                      <Text style={gs.caption}>{w.deliveryCompany}</Text>
-                    </View>
+                    <Text style={gs.label}>{w.name}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
             </>
           )}
 
-          {step === "address" && selectedRegion && (
+          {step === "branch" && selectedWay && (
             <>
-              <Text style={[gs.label, { marginTop: 16, marginBottom: 8 }]}>
-                {t("cart.enterAddress", { name: selectedRegion.name })}
-              </Text>
-              <View style={[gs.inputContainer, { marginTop: 6 }]}>
-                <TextInput
-                  style={gs.input}
-                  value={directAddress}
-                  onChangeText={setDirectAddress}
-                  placeholder={t("cart.addressPlaceholder")}
-                  placeholderTextColor={plate.graySecond}
-                  multiline
-                  autoFocus
-                />
-              </View>
-              <TouchableOpacity
-                style={[gs.button, { marginTop: 16, opacity: directAddress.trim() ? 1 : 0.5 }]}
-                onPress={handleDirectAddress}
-                disabled={!directAddress.trim()}
-              >
-                <Text style={gs.buttonText}>{t("cart.confirmAddress")}</Text>
-              </TouchableOpacity>
+              <Text style={[gs.label, { marginTop: 16, marginBottom: 8 }]}>{t("cart.selectBranch", { name: selectedWay.name })}</Text>
+              <ScrollView>
+                {selectedWay.branches.map((b) => (
+                  <TouchableOpacity
+                    key={b._id}
+                    style={[gs.cardFlat, { padding: 14, marginBottom: 8, flexDirection: "row", alignItems: "center", gap: 10 }]}
+                    onPress={() => handleSelectBranch(b)}
+                  >
+                    <Ionicons name="business-outline" size={20} color={plate.primary} />
+                    <Text style={gs.label}>{b.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </>
           )}
         </View>

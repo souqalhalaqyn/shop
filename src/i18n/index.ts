@@ -14,48 +14,6 @@ const resources = {
 const LANGUAGE_STORAGE_KEY = "@barbers-shop:language";
 
 export type LanguageCode = "en" | "ar";
-
-/**
- * Pre-initialization: Apply RTL before app renders
- * Returns true if a reload was triggered (app will restart)
- */
-export async function preInit(): Promise<boolean> {
-  const storedLang = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-  const deviceLocale = getLocales()[0].languageCode ?? "en";
-  const initialLang =
-    storedLang === "en" || storedLang === "ar"
-      ? storedLang
-      : deviceLocale.startsWith("ar")
-        ? "ar"
-        : "en";
-
-  const shouldBeRTL = initialLang === "ar";
-
-  // If RTL state doesn't match, apply it and reload
-  if (I18nManager.isRTL !== shouldBeRTL) {
-    I18nManager.allowRTL(shouldBeRTL);
-    I18nManager.forceRTL(shouldBeRTL);
-
-    // Reload after a small delay
-    setTimeout(() => {
-      if (__DEV__) {
-        const { DevSettings } = require("react-native");
-        DevSettings.reload();
-      } else {
-        const { Updates } = require("expo-updates");
-        Updates.reloadAsync();
-      }
-    }, 50);
-
-    return true; // App is reloading
-  }
-
-  return false; // Continue with init
-}
-
-/**
- * Initialize i18next (call after preInit returns false)
- */
 export async function initI18n() {
   const storedLang = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
   const deviceLocale = getLocales()[0].languageCode ?? "en";
