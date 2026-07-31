@@ -3,11 +3,11 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
-    "web": "expo start --web",
+    "start": "npx expo start --localhost",
+    "ota": "eas update --channel production --auto --message \"updates\"",
+    "build-dev": "npx eas build --platform android --profile development",
+    "build-prod": "npx eas build --platform android --profile production",
+    "url": "eas build:list --profile production --non-interactive --json --limit=1 | jq -r '.[] | select(.status==\"FINISHED\") | .artifacts.applicationArchiveUrl'",
     "lint": "expo lint"
   },
   "dependencies": {
@@ -37,6 +37,7 @@
     "expo-symbols": "~55.0.9",
     "expo-system-ui": "~55.0.18",
     "expo-updates": "~55.0.24",
+    "expo-video": "~55.0.19",
     "expo-web-browser": "~55.0.16",
     "i18next": "^26.0.8",
     "react": "19.2.0",
@@ -53,6 +54,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "eas-cli": "^20.5.1",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~55.0.0",
     "typescript": "~5.9.2"

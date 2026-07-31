@@ -18,7 +18,21 @@ export default function HeaderTitle() {
           source={require("@/assets/logo.png")}
           style={{ width: 28, height: 28, resizeMode: "contain" }}
         />
-        <Text style={gs.h1}>{t("application.name")}</Text>
+        <Text
+          style={[
+            gs.h1,
+            {
+              fontSize: 22,
+              lineHeight: 28,
+              textShadowColor: "rgba(0,0,0,0.9)",
+              textShadowOffset: { width: 1, height: 1 },
+              textShadowRadius: 2,
+            },
+          ]}
+          numberOfLines={1}
+        >
+          {t("application.name")}
+        </Text>
       </View>
     </View>
   );

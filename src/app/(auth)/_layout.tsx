@@ -2,9 +2,9 @@ import { useAuth } from "@/context/AuthContext";
 import { Redirect, Stack } from "expo-router";
 
 export default function AuthLayout() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, mustChangePassword } = useAuth();
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !mustChangePassword) {
     return <Redirect href={"/(drawer)" as any} />;
   }
 
@@ -12,6 +12,7 @@ export default function AuthLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
       <Stack.Screen name="signup" />
+      <Stack.Screen name="change-password" options={{ headerShown: false }} />
     </Stack>
   );
 }

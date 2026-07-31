@@ -15,24 +15,36 @@
     "ok": "حسناً",
     "categories": "الفئات",
     "continueAsGuest": "المتابعة كزائر",
+    "showMore": "...عرض المزيد",
+    "showLess": "...عرض أقل",
     "loadMore": "تحميل المزيد",
     "success": "تم بنجاح",
     "error": "خطأ",
     "permissionRequired": "الإذن مطلوب",
-    "uploadError": "فشل الرفع"
+    "uploadError": "فشل الرفع",
+    "uploading": "جاري الرفع...",
+    "retry": "إعادة المحاولة",
+    "dismiss": "تجاهل",
+    "back": "رجوع",
+    "required": "مطلوب",
+    "anonymous": "مجهول"
   },
   "navigation": {
     "home": "الرئيسية",
     "cart": "السلة",
     "orders": "الطلبات",
     "bucket": "المحفظة",
-    "offers": "العروض",
-    "ads": "الإعلانات",
+    "offers": "الصفقات",
+    "ads": "سوق المستعمل",
     "shops": "المحلات",
     "settings": "الإعدادات",
     "accounts": "الحسابات",
     "login": "تسجيل الدخول",
-    "communicateUs": "تواصل معنا"
+    "communicateUs": "تواصل معنا",
+    "facebook": "فيسبوك",
+    "instagram": "إنستغرام",
+    "whatsappGroup": "مجموعة واتساب",
+    "shareApp": "مشاركة التطبيق"
   },
   "keywords": { "categories": "الفئات" },
 
@@ -49,7 +61,9 @@
   "pages": {
     "comingSoon": "قريباً...",
     "shopsSoon": "المحلات قريباً...",
-    "topProducts": "أفضل المنتجات"
+    "topProducts": "أفضل المنتجات",
+    "ads": "سوق المستعمل",
+    "offers": "صفقات"
   },
   "orders": {
     "title": "طلباتي",
@@ -108,10 +122,16 @@
   "product": {
     "price": "السعر",
     "description": "الوصف",
+    "colors": "الألوان",
     "inStock": "متوفر",
     "outOfStock": "غير متوفر",
     "addToCart": "أضف إلى السلة",
-    "relatedProducts": "منتجات مشابهة"
+    "relatedProducts": "منتجات مشابهة",
+    "colorRequired": "يرجى اختيار لون قبل الإضافة إلى السلة",
+    "rate": "تقييم",
+    "comments": "تعليقات",
+    "rateThisProduct": "قيم هذا المنتج",
+    "writeComment": "اكتب تعليقاً..."
   },
   "auth": {
     "loginTitle": "مرحباً بعودتك",
@@ -127,7 +147,11 @@
     "login": "تسجيل الدخول",
     "noAccount": "ليس لديك حساب؟ سجل الآن",
     "hasAccount": "لديك حساب بالفعل؟ تسجيل الدخول",
-    "loginSignup": "تسجيل الدخول / إنشاء حساب"
+    "loginSignup": "تسجيل الدخول / إنشاء حساب",
+    "changePasswordTitle": "تغيير كلمة المرور",
+    "changePasswordSubtitle": "قام المشرف بتعيين كلمة مرور مؤقتة، يرجى تغييرها للمتابعة",
+    "newPasswordPlaceholder": "كلمة المرور الجديدة",
+    "changePasswordButton": "تغيير كلمة المرور"
   },
   "settings": {
     "title": "الإعدادات",
@@ -153,6 +177,7 @@
     "locationNamePlaceholder": "اسم الموقع",
     "skip": "تخطي",
     "confirmPurchase": "تأكيد الشراء",
+    "deliveryCharges": "رسوم التوصيل",
     "deliveryLocation": "موقع التوصيل",
     "selectState": "اختر المحافظة",
     "selectBranch": "اختر الفرع في {name}",
@@ -161,12 +186,35 @@
     "confirmAddress": "تأكيد العنوان",
     "direct": "مباشر",
     "directDelivery": "توصيل مباشر (إدخال العنوان)",
+    "directDeliveryIn": "توصيل مباشر في {name}",
+    "directDeliveryCost": "سيتم تطبيق تكلفة {cost} ل.س",
+    "companyCharges": "سيتم تطبيق رسوم الشركة",
     "addressPlaceholder": "الشارع، المبنى، الطابق...",
     "addressHint": "سيتم إضافة اسم المحافظة تلقائياً",
     "default": "افتراضي",
     "lastLocation": "استخدام آخر موقع توصيل؟",
     "useLastLocation": "استخدام آخر موقع",
     "qty": "الكمية: {qty} - {price}"
+  },
+  "checkout": {
+    "title": "إتمام الطلب",
+    "nameTitle": "الاسم الكامل",
+    "nameSubtitle": "أدخل اسمك الكامل لهذا الطلب",
+    "namePlaceholder": "الاسم الكامل",
+    "saveName": "حفظ في ملفي الشخصي",
+    "phoneTitle": "رقم الهاتف",
+    "phoneSubtitle": "رقم الهاتف للتأكيد",
+    "phonePlaceholder": "رقم الهاتف",
+    "locationTitle": "عنوان التوصيل",
+    "locationSubtitle": "اختر عنوان التوصيل",
+    "newLocation": "اختيار عنوان جديد",
+    "confirmTitle": "تأكيد الطلب",
+    "name": "الاسم",
+    "phone": "الهاتف",
+    "location": "العنوان",
+    "total": "المجموع",
+    "confirmOrder": "تأكيد الطلب",
+    "next": "التالي"
   },
 
   "categories": {
@@ -178,8 +226,10 @@
     "emptyList": "لا توجد عروض متاحة",
     "buyNow": "اشتر الآن",
     "offerPrice": "السعر الإجمالي",
+    "unitPrice": "سعر الوحدة",
     "unitSellPrice": "سعر البيع للوحدة",
     "commission": "العمولة",
+    "unitProfit": "ربح الوحدة",
     "quantity": "الكمية: {qty}",
     "buySuccess": "تم شراء العرض بنجاح!",
     "buyFailed": "فشل شراء العرض",
@@ -196,7 +246,8 @@
     "statusCompleted": "مكتمل",
     "insufficientBalance": "الرصيد غير كافٍ",
     "confirmBuy": "شراء هذا العرض بمبلغ {price}؟",
-    "confirmBuyTitle": "تأكيد الشراء"
+    "confirmBuyTitle": "تأكيد الشراء",
+    "profitBreakdown": "{profit} ل.س/وحدة × {qty} وحدات"
   },
   "ads": {
     "listTitle": "الإعلانات",
@@ -210,6 +261,8 @@
     "addProduct": "إضافة منتج",
     "productLabel": "المنتج",
     "submitButton": "إرسال",
+    "confirmCostTitle": "تأكيد نشر الإعلان",
+    "confirmCostBody": "سيتم خصم {price} ل.س من محفظتك. هل تريد المتابعة؟",
     "created": "تم إرسال طلب الإعلان",
     "validationContainerRequired": "حقول الحاوية مطلوبة",
     "validationProductRequired": "المنتج #{index} ينقصه حقول مطلوبة",
@@ -219,7 +272,9 @@
     "statusPending": "قيد الانتظار",
     "statusApproved": "تمت الموافقة",
     "statusRejected": "مرفوض",
-    "rejectionReason": "السبب"
+    "rejectionReason": "السبب",
+    "moreAds": "المزيد من الإعلانات",
+    "phonePlaceholder": "رقم الهاتف للتواصل"
   },
   "update": {
     "title": "تحديث متاح",
@@ -228,5 +283,36 @@
     "newVersion": "النسخة الجديدة",
     "instructions": "بعد التنزيل، يرجى إلغاء تثبيت التطبيق القديم أولاً، ثم تثبيت ملف APK الجديد.",
     "downloadButton": "تنزيل أحدث إصدار"
+  },
+  "containerForm": {
+    "nameEn": "الاسم (إنجليزي)",
+    "nameEnPlaceholder": "اسم الحاوية",
+    "nameAr": "الاسم (عربي)",
+    "nameArPlaceholder": "اسم الحاوية",
+    "descEn": "الوصف (إنجليزي)",
+    "descEnPlaceholder": "الوصف",
+    "descAr": "الوصف (عربي)",
+    "descArPlaceholder": "الوصف"
+  },
+  "productForm": {
+    "nameEn": "الاسم (إنجليزي)",
+    "nameEnPlaceholder": "اسم المنتج",
+    "nameAr": "الاسم (عربي)",
+    "nameArPlaceholder": "اسم المنتج",
+    "descEn": "الوصف (إنجليزي)",
+    "descEnPlaceholder": "الوصف",
+    "descAr": "الوصف (عربي)",
+    "descArPlaceholder": "الوصف",
+    "price": "السعر",
+    "stock": "المخزون",
+    "images": "الصور",
+    "tagsEn": "الوسوم (إنجليزي)",
+    "tagsEnPlaceholder": "مفصولة بفواصل: tag1, tag2, tag3",
+    "tagsAr": "الوسوم (عربي)",
+    "tagsArPlaceholder": "وسوم مفصولة بفواصل"
+  },
+  "sharing": {
+    "shareProduct": "تفقد هذا المنتج: {name}\n{url}\n\nافتح في التطبيق: {deepLink}\nحمل التطبيق من: {installUrl}",
+    "shareApp": "حمل التطبيق: {url}\n\nافتح في التطبيق: {deepLink}\nتثبيت من: {installUrl}"
   }
 }

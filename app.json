@@ -4,25 +4,51 @@
     "slug": "souqalhalaqeen",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/1024x1024.png",
     "scheme": "barbersshop",
     "userInterfaceStyle": "automatic",
-    "ios": {},
+    "ios": {
+      "bundleIdentifier": "com.rawadag.barbersshop",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Access to your photos is needed to upload payment receipts and product images.",
+        "LSApplicationQueriesSchemes": [
+          "shamcash",
+          "shamcash"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
     "splash": {
-      "image": "./assets/logo.png",
+      "image": "./assets/300x300.png",
       "resizeMode": "contain",
       "backgroundColor": "#121212"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#121212",
-        "foregroundImage": "./assets/logo.png",
-        "backgroundImage": "./assets/logo.png",
-        "monochromeImage": "./assets/logo.png"
+        "foregroundImage": "./assets/1024x1024.png"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.rawadag.barbersshop",
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": false,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "expo.dev",
+              "pathPrefix": "/accounts/souqalhalaqeen-organaization/projects/souqalhalaqeen"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {},
     "plugins": [
@@ -31,8 +57,12 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#121212",
+          "ios": {
+            "image": "./assets/300x300.png",
+            "imageWidth": 300
+          },
           "android": {
-            "image": "./assets/logo.png",
+            "image": "./assets/300x300.png",
             "imageWidth": 300
           }
         }
@@ -45,11 +75,21 @@
         {
           "android": {
             "usesCleartextTraffic": true
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
           }
         }
       ],
       "expo-font",
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "./plugins/withLocalizedAppLabel.js",
+        {
+          "ar": "سوق الحلاقين"
+        }
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -67,14 +107,15 @@
       "fallbackToCacheTimeout": 0,
       "checkOnLaunch": "ALWAYS"
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "owner": "souqalhalaqeen-organaization",
     "developmentClient": {
       "silentLaunch": false,
       "android": {
         "package": "com.rawadag.barbersshop.debug"
+      },
+      "ios": {
+        "bundleIdentifier": "com.rawadag.barbersshop.debug"
       }
     }
   }

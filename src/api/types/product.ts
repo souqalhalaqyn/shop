@@ -10,6 +10,7 @@ export interface ContainerProduct {
   aliases: string[];
   notes: string[];
   isActive: boolean;
+  currency?: string;
 }
 
 export interface Container {

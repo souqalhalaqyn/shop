@@ -15,11 +15,19 @@
     "ok": "OK",
     "categories": "Categories",
     "continueAsGuest": "Continue as Guest",
+    "showMore": "...show more",
+    "showLess": "...show less",
     "loadMore": "Load More",
     "success": "Success",
     "error": "Error",
     "permissionRequired": "Permission Required",
-    "uploadError": "Upload failed"
+    "uploadError": "Upload failed",
+    "uploading": "Uploading...",
+    "retry": "Retry",
+    "dismiss": "Dismiss",
+    "back": "Back",
+    "required": "Required",
+    "anonymous": "Anonymous"
   },
 
   "navigation": {
@@ -33,7 +41,11 @@
     "settings": "Settings",
     "accounts": "Accounts",
     "login": "Login",
-    "communicateUs": "Communicate Us"
+    "communicateUs": "Communicate Us",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "whatsappGroup": "WhatsApp Group",
+    "shareApp": "Share App"
   },
 
   "keywords": {
@@ -52,7 +64,9 @@
 
   "pages": {
     "comingSoon": "Coming Soon...",
-    "topProducts": "Top Products"
+    "topProducts": "Top Products",
+    "ads": "Ads",
+    "offers": "Offers"
   },
 
   "orders": {
@@ -113,10 +127,16 @@
   "product": {
     "price": "Price",
     "description": "Description",
+    "colors": "Colors",
     "inStock": "In Stock",
     "outOfStock": "Out of Stock",
     "addToCart": "Add to Cart",
-    "relatedProducts": "Related Products"
+    "relatedProducts": "Related Products",
+    "colorRequired": "Please select a color before adding to cart",
+    "rate": "Rate",
+    "comments": "Comments",
+    "rateThisProduct": "Rate this product",
+    "writeComment": "Write a comment..."
   },
 
   "auth": {
@@ -133,7 +153,11 @@
     "login": "Login",
     "noAccount": "Don't have an account? Sign up",
     "hasAccount": "Already have an account? Login",
-    "loginSignup": "Login / Sign Up"
+    "loginSignup": "Login / Sign Up",
+    "changePasswordTitle": "Change Password",
+    "changePasswordSubtitle": "The admin has set a temporary password. Please change it to continue.",
+    "newPasswordPlaceholder": "New password",
+    "changePasswordButton": "Change Password"
   },
 
   "settings": {
@@ -161,6 +185,7 @@
     "locationNamePlaceholder": "Location name",
     "skip": "Skip",
     "confirmPurchase": "Confirm Purchase",
+    "deliveryCharges": "Delivery Charges",
     "deliveryLocation": "Delivery Location",
     "selectState": "Select State",
     "selectBranch": "Select Branch in {name}",
@@ -169,12 +194,35 @@
     "confirmAddress": "Confirm Address",
     "direct": "Direct",
     "directDelivery": "Direct Delivery (enter address)",
+    "directDeliveryIn": "Direct Delivery in {name}",
+    "directDeliveryCost": "A cost of {cost} SYP will be applied",
+    "companyCharges": "Charges by the company will be applied",
     "addressPlaceholder": "Street, building, floor, apartment",
     "addressHint": "The state name will be added automatically as a prefix",
     "default": "Default",
     "lastLocation": "Use last delivery location?",
     "useLastLocation": "Use Last Location",
     "qty": "Qty: {qty} - {price}"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "nameTitle": "Your Name",
+    "nameSubtitle": "Enter your full name for this order",
+    "namePlaceholder": "Full name",
+    "saveName": "Save to my profile",
+    "phoneTitle": "Phone Number",
+    "phoneSubtitle": "Confirmation phone number",
+    "phonePlaceholder": "Phone number",
+    "locationTitle": "Delivery Location",
+    "locationSubtitle": "Select a delivery location",
+    "newLocation": "Select new location",
+    "confirmTitle": "Confirm Order",
+    "name": "Name",
+    "phone": "Phone",
+    "location": "Location",
+    "total": "Total",
+    "confirmOrder": "Confirm Order",
+    "next": "Next"
   },
 
   "categories": {
@@ -186,8 +234,10 @@
     "emptyList": "No offers available",
     "buyNow": "Buy Now",
     "offerPrice": "Total Price",
+    "unitPrice": "Unit Price",
     "unitSellPrice": "Unit Sell Price",
     "commission": "Commission",
+    "unitProfit": "Unit Profit",
     "quantity": "Quantity: {qty}",
     "buySuccess": "Offer purchased successfully!",
     "buyFailed": "Failed to purchase offer",
@@ -204,7 +254,8 @@
     "statusCompleted": "Completed",
     "insufficientBalance": "Insufficient balance",
     "confirmBuy": "Buy this offer for {price}?",
-    "confirmBuyTitle": "Confirm Purchase"
+    "confirmBuyTitle": "Confirm Purchase",
+    "profitBreakdown": "{profit} SYP/unit × {qty} units"
   },
   "ads": {
     "listTitle": "Ads",
@@ -218,6 +269,8 @@
     "addProduct": "Add Product",
     "productLabel": "Product",
     "submitButton": "Submit",
+    "confirmCostTitle": "Confirm Ad Posting",
+    "confirmCostBody": "This will cost {price} SYP from your wallet. Continue?",
     "created": "Ad request submitted",
     "validationContainerRequired": "Container fields required",
     "validationProductRequired": "Product #{index} is missing required fields",
@@ -227,7 +280,9 @@
     "statusPending": "Pending",
     "statusApproved": "Approved",
     "statusRejected": "Rejected",
-    "rejectionReason": "Reason"
+    "rejectionReason": "Reason",
+    "moreAds": "More Ads",
+    "phonePlaceholder": "Phone number for contact"
   },
   "update": {
     "title": "Update Available",
@@ -236,5 +291,36 @@
     "newVersion": "New Version",
     "instructions": "After downloading, please uninstall the old app first, then install the new APK file.",
     "downloadButton": "Download Latest Version"
+  },
+  "containerForm": {
+    "nameEn": "Name (English)",
+    "nameEnPlaceholder": "Container name",
+    "nameAr": "Name (Arabic)",
+    "nameArPlaceholder": "اسم الحاوية",
+    "descEn": "Description (English)",
+    "descEnPlaceholder": "Description",
+    "descAr": "Description (Arabic)",
+    "descArPlaceholder": "الوصف"
+  },
+  "productForm": {
+    "nameEn": "Name (English)",
+    "nameEnPlaceholder": "Product name",
+    "nameAr": "Name (Arabic)",
+    "nameArPlaceholder": "اسم المنتج",
+    "descEn": "Description (English)",
+    "descEnPlaceholder": "Description",
+    "descAr": "Description (Arabic)",
+    "descArPlaceholder": "الوصف",
+    "price": "Price",
+    "stock": "Stock",
+    "images": "Images",
+    "tagsEn": "Tags (English)",
+    "tagsEnPlaceholder": "Comma-separated: tag1, tag2, tag3",
+    "tagsAr": "Tags (Arabic)",
+    "tagsArPlaceholder": "وسوم مفصولة بفواصل"
+  },
+  "sharing": {
+    "shareProduct": "Check out this product: {name}\n{url}\n\nOpen in app: {deepLink}\nInstall the app: {installUrl}",
+    "shareApp": "Download the app: {url}\n\nOpen in app: {deepLink}\nInstall from: {installUrl}"
   }
 }

@@ -1,13 +1,13 @@
 import { queryKeys, useInfiniteApiQuery, type Container } from "@/api";
-import { useExchangeRate } from "@/context/ExchangeRateContext";
-import { buildImageUrl } from "@/utils/imageUrl";
+import { usePrice } from "@/utils/price";
+import MediaViewer from "@/components/MediaViewer";
 import { useGlobalStyles } from "@/styles/global";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useCallback, useRef } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,14 +25,14 @@ interface TopContainersBarProps {
 
 export default function TopContainersBar({ title }: TopContainersBarProps) {
   const { gs, plate } = useGlobalStyles();
-  const { convert } = useExchangeRate();
+  const { formatSYP } = usePrice();
   const scrollRef = useRef<ScrollView>(null);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteApiQuery<Container>({
       url: "containers",
-      queryKey: queryKeys.containers.list(),
-      params: { limit: 10 },
+      queryKey: queryKeys.containers.list({ sort: "rating" }),
+      params: { limit: 10, sort: "rating" },
     });
 
   const containers = data?.pages.flatMap((page) => page.data) ?? [];
@@ -80,7 +80,6 @@ export default function TopContainersBar({ title }: TopContainersBarProps) {
       >
         {containers.map((item) => {
           const firstProduct = item.products?.[0];
-          const imageUrl = buildImageUrl(firstProduct?.images?.[0]);
 
           return (
             <TouchableOpacity
@@ -89,8 +88,8 @@ export default function TopContainersBar({ title }: TopContainersBarProps) {
               activeOpacity={0.85}
               onPress={() => (router.push as any)(`/(drawer)/(tabs)/containers/${item._id}`)}
             >
-              {imageUrl ? (
-                <Image source={{ uri: imageUrl }} style={styles.image} resizeMode="cover" />
+              {firstProduct?.images?.[0] ? (
+                <MediaViewer uri={firstProduct?.images?.[0] ?? ""} style={styles.image} resizeMode="cover" autoplay />
               ) : (
                 <View style={[styles.image, { backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }]}>
                   <Text style={{ color: plate.textSecond, fontSize: 32 }}>{item.name[0]}</Text>
@@ -101,12 +100,23 @@ export default function TopContainersBar({ title }: TopContainersBarProps) {
                   {item.name}
                 </Text>
                 <Text style={[styles.description, { color: plate.textSecond }]} numberOfLines={2}>
-                  {item.shortDescription}
+                  {firstProduct?.description ?? firstProduct?.shortDescription ?? ""}
                 </Text>
                 {firstProduct ? (
-                  <Text style={[styles.price, { color: plate.primary }]}>
-                    {convert(firstProduct.price).toLocaleString()} SYP
-                  </Text>
+                  <>
+                    <Text style={[styles.price, { color: plate.primary }]}>
+                      {formatSYP(firstProduct.price, firstProduct.currency)}
+                    </Text>
+                    {firstProduct.averageRating ? (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
+                        <Ionicons name="star" size={14} color="#f59e0b" />
+                        <Text style={{ fontSize: 12, color: plate.textSecond }}>
+                          {firstProduct.averageRating.toFixed(1)}
+                          {firstProduct.reviewCount ? ` (${firstProduct.reviewCount})` : ""}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </>
                 ) : null}
               </View>
             </TouchableOpacity>

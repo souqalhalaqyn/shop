@@ -100,6 +100,14 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
+        name="containers/[id]/comments"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
         name="categories-all"
         options={{
           href: null,
@@ -117,6 +125,14 @@ export default function TabsLayout() {
 
       <Tabs.Screen
         name="location-picker"
+        options={{
+          href: null,
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="checkout"
         options={{
           href: null,
           headerShown: false,

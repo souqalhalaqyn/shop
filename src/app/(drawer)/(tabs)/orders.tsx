@@ -1,12 +1,12 @@
 import { getApiClient, queryKeys, useApiQuery, type ApiResponse } from "@/api";
 import { useAuth } from "@/context/AuthContext";
-import { useExchangeRate } from "@/context/ExchangeRateContext";
+import { usePrice } from "@/utils/price";
 import { useGlobalStyles } from "@/styles/global";
 import { buildImageUrl } from "@/utils/imageUrl";
 import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
-import { router } from "expo-router";
-import { useState } from "react";
+import { router, useFocusEffect, useNavigation } from "expo-router";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -26,6 +26,7 @@ interface OrderItem {
   price: number;
   quantity: number;
   image: string;
+  currency?: string;
 }
 
 interface Order {
@@ -52,8 +53,27 @@ const statusColors: Record<string, string> = {
 export default function OrdersScreen() {
   const { gs, plate } = useGlobalStyles();
   const { t } = useTranslation();
+  const navigation = useNavigation();
+
+  useFocusEffect(
+    useCallback(() => {
+      const parent = navigation.getParent();
+      if (parent) {
+        parent.setOptions({
+          headerStyle: { backgroundColor: plate.backgroundSecond, borderBottomWidth: 1, borderBottomColor: plate.gray },
+        });
+      }
+      return () => {
+        if (parent) {
+          parent.setOptions({
+            headerStyle: { backgroundColor: plate.backgroundSecond, borderBottomWidth: 0 },
+          });
+        }
+      };
+    }, [navigation, plate.backgroundSecond]),
+  );
   const { isAuthenticated } = useAuth();
-  const { convert } = useExchangeRate();
+  const { formatSYP } = usePrice();
   const queryClient = useQueryClient();
   const [cancelling, setCancelling] = useState<string | null>(null);
 
@@ -165,7 +185,7 @@ export default function OrdersScreen() {
               {orderItem.name}
             </Text>
             <Text style={[gs.caption, { color: plate.textSecond }]}>
-              {t("orders.qty")}: {orderItem.quantity} × {convert(orderItem.price).toLocaleString()} SYP
+              {t("orders.qty")}: {orderItem.quantity} ×               {formatSYP(orderItem.price, orderItem.currency)}
             </Text>
           </View>
         </View>
@@ -185,7 +205,7 @@ export default function OrdersScreen() {
           ) : null}
         </View>
         <Text style={[gs.textBold, { color: plate.primary }]}>
-          {convert(item.total).toLocaleString()} SYP
+          {item.total.toLocaleString()} SYP
         </Text>
       </View>
 

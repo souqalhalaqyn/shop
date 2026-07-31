@@ -1,24 +1,64 @@
-import { useApiQuery, type ApiResponse } from "@/api";
+import { getApiClient, useApiQuery, type ApiResponse } from "@/api";
+import { useGlobalStyles } from "@/styles/global";
+import AdsBar from "@/components/AdsBar";
 import CategoriesBar from "@/components/CategoriesBar";
 import HeroSlider from "@/components/HeroSlider";
+import OffersBar from "@/components/OffersBar";
 import SearchBar from "@/components/Searchbar";
 import TopContainersBar from "@/components/TopContainersBar";
-import { router } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { router, useFocusEffect, useNavigation } from "expo-router";
+import { useCallback } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+
+interface SliderEntry {
+  image: string;
+  productId?: string;
+}
 
 export default function Index() {
   const { t } = useTranslation();
+  const { plate } = useGlobalStyles();
+  const queryClient = useQueryClient();
+  const navigation = useNavigation();
+
+  useFocusEffect(
+    useCallback(() => {
+      const parent = navigation.getParent();
+      if (parent) {
+        parent.setOptions({
+          headerTransparent: true,
+          headerStyle: { backgroundColor: "transparent" },
+        });
+      }
+      return () => {
+        if (parent) {
+          parent.setOptions({
+            headerTransparent: false,
+            headerStyle: { backgroundColor: plate.backgroundSecond },
+          });
+        }
+      };
+    }, [navigation, plate.backgroundSecond]),
+  );
 
   const [query, setQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
-  const { data: sliderData } = useApiQuery<ApiResponse<string[]>>({
+  const { data: sliderData } = useApiQuery<ApiResponse<SliderEntry[]>>({
     url: "settings/slider",
     queryKey: ["api", "settings", "slider"],
   });
 
   const sliderImages = sliderData?.data ?? [];
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries();
+    setRefreshing(false);
+  };
 
   const handleSearch = (text: string) => {
     if (text.trim()) {
@@ -29,9 +69,26 @@ export default function Index() {
     }
   };
 
+  const handleSlidePress = async (productId?: string) => {
+    if (!productId) return;
+    try {
+      const client = getApiClient();
+      const res = await client.get(`products/${productId}`);
+      const containerId = res.data?.data?.container?._id ?? res.data?.data?.container;
+      if (containerId) {
+        router.push(`/(drawer)/(tabs)/containers/${containerId}` as any);
+      }
+    } catch {
+      // silently fail
+    }
+  };
+
   return (
     <View style={styles.root}>
-      <HeroSlider images={sliderImages} />
+      <HeroSlider
+        images={sliderImages}
+        onSlidePress={handleSlidePress}
+      />
       <View style={styles.searchRow}>
         <SearchBar
           value={query}
@@ -41,9 +98,16 @@ export default function Index() {
           onSubmit={handleSearch}
         />
       </View>
-      <ScrollView contentContainerStyle={styles.body}>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        contentContainerStyle={styles.body}
+      >
         <CategoriesBar title={t("keywords.categories")} />
         <TopContainersBar title={t("pages.topProducts")} />
+        <AdsBar title={t("pages.ads")} />
+        <OffersBar title={t("pages.offers")} />
       </ScrollView>
     </View>
   );

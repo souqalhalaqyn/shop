@@ -1,5 +1,6 @@
 import type { AppTheme } from "@/styles/theme";
 import { darkTheme, lightTheme, ThemeType } from "@/styles/theme";
+import { APP_PREFIX } from "@/config/constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
@@ -11,7 +12,7 @@ import React, {
 } from "react";
 import { useColorScheme } from "react-native";
 
-const THEME_STORAGE_KEY = "@barbers-shop:theme";
+const THEME_STORAGE_KEY = `${APP_PREFIX}:theme`;
 
 interface ThemeContextValue {
   theme: AppTheme;

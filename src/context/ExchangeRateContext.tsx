@@ -5,12 +5,10 @@ const DEFAULT_RATE = 15000;
 
 interface ExchangeRateContextValue {
   rate: number;
-  convert: (usdPrice: number) => number;
 }
 
 const ExchangeRateContext = createContext<ExchangeRateContextValue>({
   rate: DEFAULT_RATE,
-  convert: (p) => Math.round(p * DEFAULT_RATE),
 });
 
 export function ExchangeRateProvider({ children }: { children: ReactNode }) {
@@ -38,10 +36,8 @@ export function ExchangeRateProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const convert = (usdPrice: number) => Math.round(usdPrice * rate);
-
   return (
-    <ExchangeRateContext.Provider value={{ rate, convert }}>
+    <ExchangeRateContext.Provider value={{ rate }}>
       {children}
     </ExchangeRateContext.Provider>
   );

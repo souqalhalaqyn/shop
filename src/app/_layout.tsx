@@ -10,9 +10,9 @@ import { ThemeProvider } from "@react-navigation/native";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
-import { Stack } from "expo-router";
+import { Redirect, Stack, usePathname, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Platform, View } from "react-native";
+import { ActivityIndicator, Linking, Platform, View } from "react-native";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -58,7 +58,9 @@ async function registerForPushNotificationsAsync() {
 
 function InnerLayout() {
   const { theme } = useAppTheme();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, mustChangePassword } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
   const notificationListenerRef = useRef<Notifications.Subscription | null>(null);
   const responseListenerRef = useRef<Notifications.Subscription | null>(null);
 
@@ -72,7 +74,33 @@ function InnerLayout() {
     });
 
     notificationListenerRef.current = Notifications.addNotificationReceivedListener(() => {});
-    responseListenerRef.current = Notifications.addNotificationResponseReceivedListener(() => {});
+
+    responseListenerRef.current = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data as Record<string, string> | undefined;
+      if (!data?.screen) return;
+
+      switch (data.screen) {
+        case "orders":
+          router.push("/(drawer)/(tabs)/orders" as any);
+          break;
+        case "bucket":
+          router.push("/(drawer)/(tabs)/bucket" as any);
+          break;
+        case "offers":
+          router.push("/(drawer)/(tabs)/offers" as any);
+          break;
+        case "ads":
+          router.push("/(drawer)/(tabs)/ads" as any);
+          break;
+        case "container":
+          if (data.containerId) {
+            router.push(`/(drawer)/(tabs)/containers/${data.containerId}` as any);
+          }
+          break;
+        default:
+          router.push("/(drawer)" as any);
+      }
+    });
 
     return () => {
       if (notificationListenerRef.current) {
@@ -84,12 +112,32 @@ function InnerLayout() {
     };
   }, [isLoading, isAuthenticated]);
 
+  useEffect(() => {
+    function handleUrl(url: string | null) {
+      if (!url) return;
+      const params = new URL(url).searchParams;
+      const containerId = params.get("container");
+      if (containerId) {
+        const productIdx = params.get("product") ?? "0";
+        router.push(`/(drawer)/(tabs)/containers/${containerId}?product=${productIdx}` as any);
+      }
+    }
+
+    Linking.getInitialURL().then(handleUrl);
+    const sub = Linking.addEventListener("url", (e) => handleUrl(e.url));
+    return () => sub.remove();
+  }, []);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.colors.background }}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
+  }
+
+  if (isAuthenticated && mustChangePassword && !pathname.includes("change-password")) {
+    return <Redirect href={"/(auth)/change-password" as any} />;
   }
 
   return (
@@ -118,7 +166,7 @@ export default function RootLayout() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    initI18n().then(() => setReady(true));
+    initI18n().then(() => setReady(true)).catch(() => setReady(true));
   }, []);
 
   useEffect(() => {

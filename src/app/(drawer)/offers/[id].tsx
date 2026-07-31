@@ -16,8 +16,8 @@ interface OfferDetail {
   unitSellPrice: number;
   commissionPercent: number;
   status: string;
-  container: { _id: string; name: string; shortDescription: string };
-  product: { _id: string; name: string; images: string[]; price: number; longDescription?: string; tags?: string[] };
+  container: { _id: string; name: string; description: string };
+  product: { _id: string; name: string; images: string[]; price: number; description?: string; tags?: string[] };
 }
 
 export default function OfferDetail() {
@@ -34,8 +34,9 @@ export default function OfferDetail() {
   });
 
   const offer = data?.data;
-  const commissionPerUnit = offer ? offer.unitSellPrice * (offer.commissionPercent / 100) : 0;
-  const buyerProfitPerUnit = offer ? offer.unitSellPrice - commissionPerUnit : 0;
+  const unitPrice = offer ? offer.offerPrice / offer.totalQuantity : 0;
+  const unitProfit = offer ? offer.unitSellPrice - (offer.unitSellPrice * offer.commissionPercent / 100) - unitPrice : 0;
+  const totalProfit = offer ? unitProfit * offer.totalQuantity : 0;
 
   const handleBuy = () => {
     if (!isAuthenticated) {
@@ -107,9 +108,10 @@ export default function OfferDetail() {
           <Text style={gs.label}>{t("offer.quantity", { qty: offer.totalQuantity })}</Text>
         </View>
         <View style={{ borderTopWidth: 1, borderTopColor: plate.gray, paddingTop: 8, marginTop: 4 }}>
+          <Text style={[gs.caption]}>{t("offer.unitPrice")}: {unitPrice.toFixed(2)} SYP</Text>
           <Text style={[gs.caption]}>{t("offer.unitSellPrice")}: {offer.unitSellPrice.toFixed(2)} SYP</Text>
-          <Text style={[gs.caption]}>{t("offer.commission")}: {offer.commissionPercent}% ({commissionPerUnit.toFixed(2)} SYP/unit)</Text>
-          <Text style={[gs.caption, { color: plate.green }]}>Profit: {buyerProfitPerUnit.toFixed(2)} SYP/unit</Text>
+          <Text style={[gs.caption]}>{t("offer.commission")}: {offer.commissionPercent}%</Text>
+          <Text style={[gs.caption, { color: plate.green }]}>{t("offer.unitProfit")}: {unitProfit.toFixed(2)} SYP</Text>
         </View>
       </View>
 
@@ -129,9 +131,9 @@ export default function OfferDetail() {
 
       <View style={[gs.card, { padding: 16, marginTop: 20, backgroundColor: plate.green + "15" }]}>
         <Text style={[gs.h3, { color: plate.green }]}>
-          {(buyerProfitPerUnit * offer.totalQuantity).toFixed(2)} SYP {t("offer.totalProfit")}
+          {totalProfit.toFixed(2)} SYP {t("offer.totalProfit")}
         </Text>
-        <Text style={gs.caption}>at {buyerProfitPerUnit.toFixed(2)}/unit after {offer.commissionPercent}% commission</Text>
+        <Text style={gs.caption}>{t("offer.profitBreakdown", { profit: unitProfit.toFixed(2), qty: offer.totalQuantity })}</Text>
       </View>
 
       <TouchableOpacity

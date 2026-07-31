@@ -1,64 +1,119 @@
 import { getApiClient } from "@/api";
 import { getErrorMessage } from "@/api/utils/errorHandler";
+import { uploadFiles } from "@/utils/uploadFile";
+import { useAuth } from "@/context/AuthContext";
 import FormField from "@/components/FormField";
+import UploadProgressModal from "@/components/UploadProgressModal";
 import { useGlobalStyles } from "@/styles/global";
 import { buildImageUrl } from "@/utils/imageUrl";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface ProductForm {
-  nameEn: string; nameAr: string; price: string; stock: string;
-  shortDescriptionEn: string; shortDescriptionAr: string;
-  longDescriptionEn: string; longDescriptionAr: string;
-  images: string[]; tagsEn: string; tagsAr: string;
+  nameAr: string; price: string; stock: string;
+  descriptionAr: string;
+  images: string[];
 }
 
 const emptyProduct = (): ProductForm => ({
-  nameEn: "", nameAr: "", price: "", stock: "0",
-  shortDescriptionEn: "", shortDescriptionAr: "",
-  longDescriptionEn: "", longDescriptionAr: "",
-  images: [], tagsEn: "", tagsAr: "",
+  nameAr: "", price: "", stock: "0",
+  descriptionAr: "",
+  images: [],
 });
 
 export default function AdCreateScreen() {
   const { plate, gs } = useGlobalStyles();
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [adPrice, setAdPrice] = useState(0);
+  const [confirming, setConfirming] = useState(false);
 
-  const [nameEn, setNameEn] = useState("");
+  useEffect(() => {
+    getApiClient().get("settings/exchange-rate").then((res) => {
+      setAdPrice(res.data?.data?.adPrice ?? 0);
+    }).catch(() => {});
+  }, []);
+
   const [nameAr, setNameAr] = useState("");
-  const [shortDescriptionEn, setShortDescriptionEn] = useState("");
-  const [shortDescriptionAr, setShortDescriptionAr] = useState("");
-  const [longDescriptionEn, setLongDescriptionEn] = useState("");
-  const [longDescriptionAr, setLongDescriptionAr] = useState("");
+  const [contactPhone, setContactPhone] = useState(user?.phone ?? "");
 
   const [products, setProducts] = useState<ProductForm[]>([emptyProduct()]);
   const [expandedProduct, setExpandedProduct] = useState<number | null>(0);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const abortRef = useRef<(() => void) | null>(null);
+  const pendingFormDataRef = useRef<FormData | null>(null);
+
+  const runUpload = useCallback(async (formData: FormData): Promise<string[] | null> => {
+    setUploadProgress(0);
+    setUploadError(null);
+    setUploading(true);
+    pendingFormDataRef.current = formData;
+    try {
+      const { filenames, abort } = await uploadFiles(formData, setUploadProgress);
+      abortRef.current = abort;
+      return filenames;
+    } catch (err: any) {
+      setUploadError(err?.message ?? t("common.uploadError"));
+      return null;
+    }
+  }, [t]);
+
+  const retryUpload = useCallback(() => {
+    if (pendingFormDataRef.current) {
+      const formData = pendingFormDataRef.current;
+      runUpload(formData).then((filenames) => {
+        if (filenames) {
+          setUploading(false);
+          setUploadProgress(0);
+          abortRef.current = null;
+          pendingFormDataRef.current = null;
+        }
+      });
+    }
+  }, [runUpload]);
+
+  const cancelUpload = useCallback(() => {
+    abortRef.current?.();
+    setUploading(false);
+    setUploadProgress(0);
+    setUploadError(null);
+    abortRef.current = null;
+    pendingFormDataRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    return () => abortRef.current?.();
+  }, []);
 
   const handleAddImage = useCallback(async (productIndex: number) => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) { Alert.alert(t("common.permissionRequired")); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.8 });
     if (result.canceled || !result.assets?.[0]) return;
-    try {
-      const localUri = result.assets[0].uri;
-      const filename = localUri.split("/").pop() || "image.jpg";
-      const formData = new FormData();
-      formData.append("images", { uri: localUri, name: filename, type: "image/jpeg" } as any);
-      const client = getApiClient();
-      const response = await client.post("/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
-      const filenames: string[] = response.data?.data ?? [];
+    const localUri = result.assets[0].uri;
+    const filename = localUri.split("/").pop() || "image.jpg";
+    const formData = new FormData();
+    formData.append("images", { uri: localUri, name: filename, type: "image/jpeg" } as any);
+    const filenames = await runUpload(formData);
+    if (filenames) {
       setProducts((prev) => {
         const next = [...prev];
         next[productIndex] = { ...next[productIndex], images: [...next[productIndex].images, ...filenames] };
         return next;
       });
-    } catch (err) { Alert.alert(t("common.error"), getErrorMessage(err)); }
-  }, [t]);
+      setUploading(false);
+      setUploadProgress(0);
+      abortRef.current = null;
+      pendingFormDataRef.current = null;
+    }
+  }, [t, runUpload]);
 
   const updateProduct = (index: number, field: keyof ProductForm, value: any) => {
     setProducts((prev) => {
@@ -77,36 +132,54 @@ export default function AdCreateScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!nameEn.trim() || !nameAr.trim()) {
+    if (uploading) {
+      Alert.alert("", "Please wait, images are still uploading");
+      return;
+    }
+    if (!nameAr.trim()) {
       Alert.alert("", t("ads.validationContainerRequired"));
       return;
     }
     for (let i = 0; i < products.length; i++) {
       const p = products[i];
-      if (!p.nameEn.trim() || !p.price || isNaN(Number(p.price)) || Number(p.price) <= 0) {
+      if (!p.nameAr.trim() || !p.price || isNaN(Number(p.price)) || Number(p.price) <= 0) {
         Alert.alert("", t("ads.validationProductRequired", { index: i + 1 }));
         return;
       }
     }
 
+    if (adPrice > 0 && !confirming) {
+      setConfirming(true);
+      Alert.alert(
+        t("ads.confirmCostTitle"),
+        t("ads.confirmCostBody", { price: adPrice.toLocaleString() }),
+        [
+          { text: t("common.cancel"), style: "cancel", onPress: () => setConfirming(false) },
+          { text: t("common.confirm"), onPress: () => { setConfirming(false); doSubmit(); } },
+        ],
+      );
+      return;
+    }
+
+    await doSubmit();
+  };
+
+  const doSubmit = async () => {
     setSaving(true);
     try {
       const client = getApiClient();
       await client.post("ads", {
         container: {
-          nameEn: nameEn.trim(), nameAr: nameAr.trim(),
-          shortDescriptionEn: shortDescriptionEn.trim(), shortDescriptionAr: shortDescriptionAr.trim(),
-          longDescriptionEn: longDescriptionEn.trim(), longDescriptionAr: longDescriptionAr.trim(),
+          nameAr: nameAr.trim(),
         },
         products: products.map((p) => ({
-          nameEn: p.nameEn.trim(), nameAr: p.nameAr.trim(),
-          price: Number(p.price), stock: Number(p.stock) || 0,
+          nameAr: p.nameAr.trim(),
+          price: Number(p.price),
+          stock: Number(p.stock) || 0,
           images: p.images,
-          shortDescriptionEn: p.shortDescriptionEn.trim(), shortDescriptionAr: p.shortDescriptionAr.trim(),
-          longDescriptionEn: p.longDescriptionEn.trim(), longDescriptionAr: p.longDescriptionAr.trim(),
-          tagsEn: p.tagsEn.split(",").map((x) => x.trim()).filter(Boolean),
-          tagsAr: p.tagsAr.split(",").map((x) => x.trim()).filter(Boolean),
+          descriptionAr: p.descriptionAr.trim(),
         })),
+        phone: contactPhone.trim() || (user?.phone ?? ""),
       });
       Alert.alert("", t("ads.created"));
       router.back();
@@ -128,12 +201,19 @@ export default function AdCreateScreen() {
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
         <Text style={[gs.h2, { marginTop: 16, marginBottom: 16 }]}>{t("ads.containerInfo")}</Text>
-        <FormField label={t("containerForm.nameEn")} value={nameEn} onChangeText={setNameEn} placeholder={t("containerForm.nameEnPlaceholder")} required />
         <FormField label={t("containerForm.nameAr")} value={nameAr} onChangeText={setNameAr} placeholder={t("containerForm.nameArPlaceholder")} required />
-        <FormField label={t("containerForm.shortDescEn")} value={shortDescriptionEn} onChangeText={setShortDescriptionEn} placeholder={t("containerForm.shortDescEnPlaceholder")} />
-        <FormField label={t("containerForm.shortDescAr")} value={shortDescriptionAr} onChangeText={setShortDescriptionAr} placeholder={t("containerForm.shortDescArPlaceholder")} />
-        <FormField label={t("containerForm.longDescEn")} value={longDescriptionEn} onChangeText={setLongDescriptionEn} placeholder={t("containerForm.longDescEnPlaceholder")} multiline numberOfLines={3} style={{ minHeight: 60, textAlignVertical: "top", paddingTop: 12 }} />
-        <FormField label={t("containerForm.longDescAr")} value={longDescriptionAr} onChangeText={setLongDescriptionAr} placeholder={t("containerForm.longDescArPlaceholder")} multiline numberOfLines={3} style={{ minHeight: 60, textAlignVertical: "top", paddingTop: 12 }} />
+
+        <Text style={[gs.inputLabel, { marginTop: 16 }]}>{t("checkout.phone")}</Text>
+        <View style={gs.inputContainer}>
+          <TextInput
+            style={gs.input}
+            value={contactPhone}
+            onChangeText={setContactPhone}
+            keyboardType="phone-pad"
+            placeholder={t("ads.phonePlaceholder")}
+            placeholderTextColor={plate.textSecond}
+          />
+        </View>
 
         <View style={[gs.containerRow, { justifyContent: "space-between", marginTop: 24, marginBottom: 12 }]}>
           <Text style={[gs.h2]}>{t("ads.productsInfo")}</Text>
@@ -150,7 +230,7 @@ export default function AdCreateScreen() {
           <View key={i} style={[gs.card, { padding: 12, marginBottom: 12 }]}>
             <TouchableOpacity style={[gs.containerRow, { justifyContent: "space-between" }]} onPress={() => setExpandedProduct(expandedProduct === i ? null : i)}>
               <Text style={[gs.label, { flex: 1 }]} numberOfLines={1}>
-                {p.nameEn || `${t("ads.productLabel")} ${i + 1}`}
+                {p.nameAr || `${t("ads.productLabel")} ${i + 1}`}
               </Text>
               <View style={{ flexDirection: "row", gap: 8 }}>
                 <Ionicons name={expandedProduct === i ? "chevron-up" : "chevron-down"} size={18} color={plate.textSecond} />
@@ -166,12 +246,8 @@ export default function AdCreateScreen() {
             </TouchableOpacity>
             {expandedProduct === i && (
               <View style={{ marginTop: 12 }}>
-                <FormField label={t("productForm.nameEn")} value={p.nameEn} onChangeText={(v) => updateProduct(i, "nameEn", v)} placeholder={t("productForm.nameEnPlaceholder")} required />
                 <FormField label={t("productForm.nameAr")} value={p.nameAr} onChangeText={(v) => updateProduct(i, "nameAr", v)} placeholder={t("productForm.nameArPlaceholder")} required />
-                <FormField label={t("productForm.shortDescEn")} value={p.shortDescriptionEn} onChangeText={(v) => updateProduct(i, "shortDescriptionEn", v)} placeholder={t("productForm.shortDescEnPlaceholder")} />
-                <FormField label={t("productForm.shortDescAr")} value={p.shortDescriptionAr} onChangeText={(v) => updateProduct(i, "shortDescriptionAr", v)} placeholder={t("productForm.shortDescArPlaceholder")} />
-                <FormField label={t("productForm.longDescEn")} value={p.longDescriptionEn} onChangeText={(v) => updateProduct(i, "longDescriptionEn", v)} placeholder={t("productForm.longDescEnPlaceholder")} multiline numberOfLines={3} style={{ minHeight: 60, textAlignVertical: "top", paddingTop: 12 }} />
-                <FormField label={t("productForm.longDescAr")} value={p.longDescriptionAr} onChangeText={(v) => updateProduct(i, "longDescriptionAr", v)} placeholder={t("productForm.longDescArPlaceholder")} multiline numberOfLines={3} style={{ minHeight: 60, textAlignVertical: "top", paddingTop: 12 }} />
+                <FormField label={t("productForm.descAr")} value={p.descriptionAr} onChangeText={(v) => updateProduct(i, "descriptionAr", v)} placeholder={t("productForm.descArPlaceholder")} multiline numberOfLines={3} style={{ minHeight: 60, textAlignVertical: "top", paddingTop: 12 }} />
                 <View style={{ flexDirection: "row", gap: 12 }}>
                   <View style={{ flex: 1 }}>
                     <FormField label={t("productForm.price")} value={p.price} onChangeText={(v) => updateProduct(i, "price", v)} placeholder={t("productForm.pricePlaceholder")} keyboardType="decimal-pad" required />
@@ -193,8 +269,6 @@ export default function AdCreateScreen() {
                     </TouchableOpacity>
                   </View>
                 </View>
-                <FormField label={t("productForm.tagsEn")} value={p.tagsEn} onChangeText={(v) => updateProduct(i, "tagsEn", v)} placeholder={t("productForm.tagsEnPlaceholder")} />
-                <FormField label={t("productForm.tagsAr")} value={p.tagsAr} onChangeText={(v) => updateProduct(i, "tagsAr", v)} placeholder={t("productForm.tagsArPlaceholder")} />
               </View>
             )}
           </View>
@@ -208,6 +282,15 @@ export default function AdCreateScreen() {
           <Text style={gs.buttonText}>{saving ? t("common.loading") : t("ads.submitButton")}</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <UploadProgressModal
+        visible={uploading || !!uploadError}
+        progress={uploadProgress}
+        error={uploadError}
+        onRetry={retryUpload}
+        onCancel={cancelUpload}
+        onDismiss={() => { setUploadError(null); setUploading(false); setUploadProgress(0); abortRef.current = null; pendingFormDataRef.current = null; }}
+      />
     </KeyboardAvoidingView>
   );
 }

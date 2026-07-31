@@ -15,7 +15,7 @@ interface OfferData {
   unitSellPrice: number;
   commissionPercent: number;
   status: string;
-  container: { _id: string; name: string; shortDescription: string };
+  container: { _id: string; name: string; description: string };
   product: { _id: string; name: string; images: string[]; price: number };
 }
 
@@ -29,7 +29,7 @@ export default function OffersList() {
     queryKey: ["api", "offers", "list"],
   });
 
-  const { data: myOfferData } = useApiQuery<ApiResponse<any>>({
+  const { data: myOfferData, isLoading: myOfferLoading } = useApiQuery<ApiResponse<any>>({
     url: "offers/mine",
     queryKey: ["api", "offers", "mine"],
     enabled: isAuthenticated,
@@ -48,8 +48,18 @@ export default function OffersList() {
 
   return (
     <View style={gs.safeArea}>
-      <View style={{ paddingHorizontal: 20 }}>
-        <Text style={[gs.h1, { marginTop: 16, marginBottom: 16 }]}>{t("offer.listTitle")}</Text>
+      <View style={{ paddingHorizontal: 20, paddingVertical: 16, gap: 12 }}>
+        <Text style={gs.h1}>{t("offer.listTitle")}</Text>
+        {isAuthenticated && (
+          <TouchableOpacity
+            onPress={() => (router.push as any)("/(drawer)/offers/mine")}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 10, borderWidth: 1, borderColor: plate.primary, backgroundColor: plate.primary + "12", alignSelf: "flex-start" }}
+          >
+            <Ionicons name="receipt-outline" size={18} color={plate.primary} />
+            <Text style={{ fontSize: 13, fontWeight: "600", color: plate.primary }}>{t("offer.myOffer")}</Text>
+            {myOfferLoading && <ActivityIndicator size="small" color={plate.primary} />}
+          </TouchableOpacity>
+        )}
       </View>
 
       <FlatList
@@ -90,19 +100,6 @@ export default function OffersList() {
             </View>
           </TouchableOpacity>
         )}
-        ListFooterComponent={
-          myOffer ? (
-            <View style={{ marginTop: 16 }}>
-              <TouchableOpacity
-                style={[gs.button, { backgroundColor: plate.backgroundSecond }]}
-                onPress={() => (router.push as any)("/(drawer)/offers/mine")}
-              >
-                <Ionicons name="receipt-outline" size={20} color={plate.primary} style={{ marginRight: 8 }} />
-                <Text style={[gs.buttonText, { color: plate.primary }]}>{t("offer.myOffer")}</Text>
-              </TouchableOpacity>
-            </View>
-          ) : null
-        }
       />
     </View>
   );

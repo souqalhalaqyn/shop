@@ -1,3 +1,4 @@
+import { APP_PREFIX } from "@/config/constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
@@ -8,7 +9,7 @@ import React, {
   type ReactNode,
 } from "react";
 
-const STORAGE_KEY = "@barbers-shop:cart";
+const STORAGE_KEY = `${APP_PREFIX}:cart`;
 
 export interface CartItem {
   containerId: string;
@@ -17,19 +18,24 @@ export interface CartItem {
   price: number;
   image: string;
   quantity: number;
+  currency?: string;
+  color?: string;
 }
 
 interface CartContextValue {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "quantity">, qty?: number) => void;
-  removeItem: (containerId: string, productIndex: number) => void;
-  updateQuantity: (containerId: string, productIndex: number, qty: number) => void;
+  removeItem: (containerId: string, productIndex: number, color?: string) => void;
+  updateQuantity: (containerId: string, productIndex: number, qty: number, color?: string) => void;
   clearCart: () => void;
-  total: number;
   itemCount: number;
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
+
+function itemKey(item: { containerId: string; productIndex: number; color?: string }) {
+  return `${item.containerId}-${item.productIndex}-${item.color ?? ""}`;
+}
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -46,9 +52,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addItem = useCallback(
     (item: Omit<CartItem, "quantity">, qty = 1) => {
       setItems((prev) => {
-        const idx = prev.findIndex(
-          (i) => i.containerId === item.containerId && i.productIndex === item.productIndex,
-        );
+        const key = itemKey(item);
+        const idx = prev.findIndex((i) => itemKey(i) === key);
         let next: CartItem[];
         if (idx >= 0) {
           next = prev.map((i, index) =>
@@ -65,11 +70,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const removeItem = useCallback(
-    (containerId: string, productIndex: number) => {
+    (containerId: string, productIndex: number, color?: string) => {
+      const key = `${containerId}-${productIndex}-${color ?? ""}`;
       setItems((prev) => {
-        const next = prev.filter(
-          (i) => !(i.containerId === containerId && i.productIndex === productIndex),
-        );
+        const next = prev.filter((i) => itemKey(i) !== key);
         AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         return next;
       });
@@ -78,13 +82,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const updateQuantity = useCallback(
-    (containerId: string, productIndex: number, qty: number) => {
+    (containerId: string, productIndex: number, qty: number, color?: string) => {
       if (qty < 1) return;
+      const key = `${containerId}-${productIndex}-${color ?? ""}`;
       setItems((prev) => {
         const next = prev.map((i) =>
-          i.containerId === containerId && i.productIndex === productIndex
-            ? { ...i, quantity: qty }
-            : i,
+          itemKey(i) === key ? { ...i, quantity: qty } : i,
         );
         AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
         return next;
@@ -98,12 +101,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     AsyncStorage.removeItem(STORAGE_KEY);
   }, []);
 
-  const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount }}
+      value={{ items, addItem, removeItem, updateQuantity, clearCart, itemCount }}
     >
       {children}
     </CartContext.Provider>

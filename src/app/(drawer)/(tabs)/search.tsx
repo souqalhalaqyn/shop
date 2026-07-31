@@ -1,6 +1,7 @@
-import { queryKeys, useApiQuery, type ApiResponse, type Container } from "@/api";
-import { useExchangeRate } from "@/context/ExchangeRateContext";
+import { queryKeys, useInfiniteApiQuery, type Container } from "@/api";
+import { usePrice } from "@/utils/price";
 import SearchBar from "@/components/Searchbar";
+import MediaViewer from "@/components/MediaViewer";
 import { useGlobalStyles } from "@/styles/global";
 import { buildImageUrl } from "@/utils/imageUrl";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,7 +11,6 @@ import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   RefreshControl,
   Text,
   TouchableOpacity,
@@ -26,36 +26,56 @@ const SORT_OPTIONS = [
 
 export default function SearchScreen() {
   const { gs, plate } = useGlobalStyles();
-  const { t } = useTranslation();
-  const { q } = useLocalSearchParams<{ q?: string }>();
+  const { t, i18n } = useTranslation();
+  const { q, sort: sortParam } = useLocalSearchParams<{ q?: string; sort?: string }>();
 
-  const { convert } = useExchangeRate();
+  const { formatSYP } = usePrice();
   const [searchText, setSearchText] = useState(q ?? "");
-  const [sort, setSort] = useState("relevance");
+  const [sort, setSort] = useState(sortParam ?? "relevance");
 
-  const hasQuery = (q ?? "").length > 0 || sort !== "relevance";
+  const searchQuery = q ?? "";
+  const hasQuery = searchQuery.length > 0;
 
-  const params: Record<string, any> = { sort };
-  if (q) params.q = q;
-  if (!q && sort !== "relevance") params.q = "";
-  if (!q && sort === "relevance") params.limit = 50;
+  const params: Record<string, unknown> = {};
+  if (hasQuery) {
+    params.q = searchQuery;
+    params.sort = sort;
+  }
 
-  const { data, isLoading, isRefetching, refetch } = useApiQuery<ApiResponse<Container[]>>({
+  const {
+    data,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    refetch,
+    isRefetching,
+  } = useInfiniteApiQuery<Container[]>({
     url: hasQuery ? "search" : "containers",
     params,
-    queryKey: queryKeys.resource("search").list({ q: q ?? "", sort }),
+    queryKey: queryKeys.resource("search").list({ q: searchQuery, sort: hasQuery ? sort : "relevance" }),
     enabled: true,
   });
 
-  const containers = data?.data ?? [];
+  const containers = data?.pages.flatMap((page) => page.data) ?? [];
 
   const handleSearch = () => {
-    router.setParams({ q: searchText });
+    router.setParams({ q: searchText, sort });
+  };
+
+  const handleSortChange = (value: string) => {
+    setSort(value);
+    if (hasQuery) {
+      router.setParams({ q: searchQuery, sort: value });
+    }
   };
 
   const renderItem = ({ item }: { item: Container }) => {
     const product = item.products?.[0];
     const imageUri = buildImageUrl(product?.images?.[0]);
+    const isAr = i18n.language === "ar";
+    const itemName = item.name ?? (isAr ? (item as any).nameAr : (item as any).nameEn) ?? (item as any).nameAr ?? (item as any).nameEn ?? "";
+    const prodDesc = product?.description ?? (isAr ? (product as any)?.descriptionAr : (product as any)?.descriptionEn) ?? "";
 
     return (
       <TouchableOpacity
@@ -67,11 +87,7 @@ export default function SearchScreen() {
       >
         <View style={[gs.cardFlat, { overflow: "hidden" }]}>
           {imageUri ? (
-            <Image
-              source={{ uri: imageUri }}
-              style={{ width: "100%", height: 180 }}
-              resizeMode="cover"
-            />
+            <MediaViewer uri={product?.images?.[0] ?? ""} style={{ width: "100%", height: 180 }} resizeMode="cover" autoplay />
           ) : (
             <View
               style={{
@@ -91,15 +107,29 @@ export default function SearchScreen() {
           )}
           <View style={{ padding: 10 }}>
             <Text style={gs.label} numberOfLines={1}>
-              {item.name}
+              {itemName}
             </Text>
+            {prodDesc ? (
+              <Text style={{ fontSize: 11, color: plate.textSecond, marginTop: 2 }} numberOfLines={2}>
+                {prodDesc}
+              </Text>
+            ) : null}
             {product?.price != null && (
               <Text
                 style={[gs.caption, { color: plate.primary, marginTop: 2 }]}
               >
-                {convert(product.price).toLocaleString()} SYP
+                {formatSYP(product.price, product.currency)}
               </Text>
             )}
+            {product?.averageRating ? (
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginTop: 4 }}>
+                <Ionicons name="star" size={14} color="#f59e0b" />
+                <Text style={{ fontSize: 12, color: plate.textSecond }}>
+                  {product.averageRating.toFixed(1)}
+                  {product.reviewCount ? ` (${product.reviewCount})` : ""}
+                </Text>
+              </View>
+            ) : null}
           </View>
         </View>
       </TouchableOpacity>
@@ -120,20 +150,13 @@ export default function SearchScreen() {
 
   return (
     <View style={gs.container}>
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View style={{ flex: 1 }}>
-          <SearchBar
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholder={t("common.search")}
-            onClear={() => setSearchText("")}
-            onSubmit={handleSearch}
-          />
-        </View>
-        <TouchableOpacity onPress={handleSearch} style={{ marginRight: 16 }}>
-          <Ionicons name="search" size={24} color={plate.primary} />
-        </TouchableOpacity>
-      </View>
+      <SearchBar
+        value={searchText}
+        onChangeText={setSearchText}
+        placeholder={t("common.search")}
+        onClear={() => setSearchText("")}
+        onSubmit={handleSearch}
+      />
 
       <View
         style={{
@@ -149,7 +172,7 @@ export default function SearchScreen() {
           return (
             <TouchableOpacity
               key={opt.value}
-              onPress={() => setSort(opt.value)}
+              onPress={() => handleSortChange(opt.value)}
               style={[
                 {
                   paddingHorizontal: 14,
@@ -191,6 +214,15 @@ export default function SearchScreen() {
           contentContainerStyle={{ paddingHorizontal: 10, paddingBottom: 24 }}
           columnWrapperStyle={{ gap: 10 }}
           ListEmptyComponent={ListEmptyComponent}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <ActivityIndicator size="small" color={plate.primary} style={{ paddingVertical: 16 }} />
+            ) : null
+          }
+          onEndReached={() => {
+            if (hasNextPage) fetchNextPage();
+          }}
+          onEndReachedThreshold={0.3}
           refreshControl={
             <RefreshControl
               refreshing={isRefetching}

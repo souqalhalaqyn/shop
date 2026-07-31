@@ -1,5 +1,6 @@
+import { getApiClient } from "@/api";
 import HeaderTitle from "@/components/HeaderTitle";
-import { ADMIN_PHONE_NUMBER } from "@/config/constants";
+import { ADMIN_PHONE_NUMBER, FACEBOOK_URL, INSTAGRAM_URL, WHATSAPP_GROUP_URL } from "@/config/constants";
 import { useAuth } from "@/context/AuthContext";
 import { useGlobalStyles } from "@/styles/global";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,6 +11,7 @@ import {
 import { Drawer } from "expo-router/drawer";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Dimensions,
@@ -25,6 +27,23 @@ export default function DrawerLayout() {
   const { plate, gs } = useGlobalStyles();
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
+  const [appUrl, setAppUrl] = useState("");
+
+  useEffect(() => {
+    getApiClient().get("app-versions").then((res) => {
+      const url = res.data?.data?.shop?.url;
+      if (url) setAppUrl(url);
+    }).catch(() => {});
+  }, []);
+
+  const handleShareApp = () => {
+    if (!appUrl) return;
+    const deepLink = "barbersshop://";
+    const msg = encodeURIComponent(t("sharing.shareApp", { url: appUrl, deepLink, installUrl: appUrl }));
+    Linking.openURL(`https://wa.me/?text=${msg}`).catch(() => {
+      Alert.alert("", t("bucket.failedWhatsApp"));
+    });
+  };
 
   const handleCommunicate = () => {
     const phone = ADMIN_PHONE_NUMBER.replace(/^\+/, "");
@@ -52,7 +71,7 @@ export default function DrawerLayout() {
                   <Ionicons name="person" size={24} color={plate.background} />
                 </View>
                 <View>
-                  <Text style={[gs.label, { fontSize: 16 }]}>{user.phone}</Text>
+                  <Text style={[gs.label, { fontSize: 16 }]}>{user.name ?? user.phone}</Text>
                   <Text style={gs.caption}>{t("settings.account")}</Text>
                 </View>
               </View>
@@ -79,6 +98,44 @@ export default function DrawerLayout() {
               <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
               <Text style={[gs.label, { color: plate.text, fontSize: 16 }]}>
                 {t("navigation.communicateUs")}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[gs.containerRow, { gap: 12, paddingVertical: 12 }]}
+              onPress={() => Linking.openURL(FACEBOOK_URL).catch(() => {})}
+            >
+              <Ionicons name="logo-facebook" size={22} color="#1877F2" />
+              <Text style={[gs.label, { color: plate.text, fontSize: 16 }]}>
+                {t("navigation.facebook")}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[gs.containerRow, { gap: 12, paddingVertical: 12 }]}
+              onPress={() => Linking.openURL(INSTAGRAM_URL).catch(() => {})}
+            >
+              <Ionicons name="logo-instagram" size={22} color="#E4405F" />
+              <Text style={[gs.label, { color: plate.text, fontSize: 16 }]}>
+                {t("navigation.instagram")}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[gs.containerRow, { gap: 12, paddingVertical: 12 }]}
+              onPress={() => Linking.openURL(WHATSAPP_GROUP_URL).catch(() => {})}
+            >
+              <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
+              <Text style={[gs.label, { color: plate.text, fontSize: 16 }]}>
+                {t("navigation.whatsappGroup")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ borderTopWidth: 1, borderTopColor: plate.gray, paddingTop: 16, marginTop: 16 }}>
+            <TouchableOpacity
+              style={[gs.containerRow, { gap: 12, paddingVertical: 12 }]}
+              onPress={handleShareApp}
+            >
+              <Ionicons name="share-social-outline" size={22} color="#25D366" />
+              <Text style={[gs.label, { color: plate.text, fontSize: 16 }]}>
+                {t("navigation.shareApp")}
               </Text>
             </TouchableOpacity>
           </View>

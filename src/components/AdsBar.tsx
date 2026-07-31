@@ -1,10 +1,10 @@
-import { type Category, queryKeys, useApiQuery, type ApiResponse } from "@/api";
+import { queryKeys, useApiQuery, type ApiResponse } from "@/api";
 import MediaViewer from "@/components/MediaViewer";
 import { useGlobalStyles } from "@/styles/global";
 import { router } from "expo-router";
-import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Dimensions,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,20 +12,38 @@ import {
   View,
 } from "react-native";
 
-interface CategoriesBarProps {
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const CARD_WIDTH = SCREEN_WIDTH * 0.8;
+const CARD_MARGIN = SCREEN_WIDTH * 0.1;
+
+interface AdItem {
+  _id: string;
+  container: {
+    name: string;
+    description: string;
+  };
+  products: Array<{
+    name: string;
+    price: number;
+    images: string[];
+    description: string;
+  }>;
+}
+
+interface AdsBarProps {
   title: string;
 }
 
-export default function CategoriesBar({ title }: CategoriesBarProps) {
+export default function AdsBar({ title }: AdsBarProps) {
   const { gs, plate } = useGlobalStyles();
-  const { t } = useTranslation();
 
-  const { data, isLoading } = useApiQuery<ApiResponse<Category[]>>({
-    url: "categories",
-    queryKey: queryKeys.categories.list(),
+  const { data, isLoading } = useApiQuery<ApiResponse<AdItem[]>>({
+    url: "ads",
+    queryKey: queryKeys.resource("ads").list({ limit: 10 }),
+    params: { limit: 10 },
   });
 
-  const categories = data?.data ?? [];
+  const ads = data?.data ?? [];
 
   if (isLoading) {
     return (
@@ -38,13 +56,15 @@ export default function CategoriesBar({ title }: CategoriesBarProps) {
     );
   }
 
+  if (ads.length === 0) return null;
+
   return (
     <View style={{ marginBottom: 24 }}>
       <View style={styles.header}>
         <Text style={gs.h1}>{title}</Text>
-        <TouchableOpacity onPress={() => router.push("/(drawer)/(tabs)/categories-all")}>
+        <TouchableOpacity onPress={() => router.push("/(drawer)/ads" as any)}>
           <Text style={{ color: plate.primary, fontSize: 13, fontWeight: "600" }}>
-            {t("categories.showMore")}
+            Show more
           </Text>
         </TouchableOpacity>
       </View>
@@ -53,31 +73,40 @@ export default function CategoriesBar({ title }: CategoriesBarProps) {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.barContent}
+        snapToInterval={CARD_WIDTH + 12}
+        decelerationRate="fast"
       >
-        {categories.map((item) => {
-          const firstContainer = item.containers?.[0];
-          const firstProduct = firstContainer?.products?.[0];
+        {ads.map((item) => {
+          const product = item.products?.[0];
 
           return (
             <TouchableOpacity
               key={item._id}
-              style={[gs.card, { width: 140 }]}
-              onPress={() => router.push(`/(drawer)/(tabs)/categories/${item._id}` as any)}
+              style={[gs.card, styles.card]}
+              activeOpacity={0.85}
+              onPress={() => (router.push as any)(`/(drawer)/ads/${item._id}`)}
             >
-              {firstProduct?.images?.[0] ? (
-                <MediaViewer uri={firstProduct?.images?.[0] ?? ""} style={styles.image} resizeMode="cover" autoplay />
+              {product?.images?.[0] ? (
+                <MediaViewer uri={product?.images?.[0] ?? ""} style={styles.image} resizeMode="cover" autoplay />
               ) : (
                 <View style={[styles.image, { backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }]}>
-                  <Text style={{ color: plate.textSecond, fontSize: 24 }}>{item.name[0]}</Text>
+                  <Text style={{ color: plate.textSecond, fontSize: 32 }}>
+                    {item.container?.name?.[0] ?? "A"}
+                  </Text>
                 </View>
               )}
               <View style={styles.content}>
                 <Text style={[styles.name, { color: plate.text }]} numberOfLines={1}>
-                  {item.name}
+                  {item.container?.name ?? ""}
                 </Text>
                 <Text style={[styles.description, { color: plate.textSecond }]} numberOfLines={2}>
-                  {item.description}
+                  {product?.description ?? ""}
                 </Text>
+                {product ? (
+                  <Text style={[styles.price, { color: plate.primary }]}>
+                    {product.price.toLocaleString()} SYP
+                  </Text>
+                ) : null}
               </View>
             </TouchableOpacity>
           );
@@ -96,27 +125,32 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   barContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: CARD_MARGIN,
     gap: 12,
+    alignItems: "center",
+  },
+  card: {
+    width: CARD_WIDTH,
   },
   image: {
     width: "100%",
-    height: 100,
+    height: 180,
   },
   content: {
-    padding: 10,
+    padding: 12,
   },
   name: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "700",
     marginBottom: 4,
   },
   description: {
-    fontSize: 11,
-    lineHeight: 14,
+    fontSize: 12,
+    lineHeight: 15,
+    marginBottom: 6,
   },
   price: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: "bold",
   },
 });

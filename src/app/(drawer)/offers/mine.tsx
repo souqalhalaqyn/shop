@@ -60,8 +60,9 @@ export default function MyOffer() {
 
   const offer = data.data;
   const remaining = offer.totalQuantity - offer.soldQuantity;
-  const commissionPerUnit = offer.unitSellPrice * (offer.commissionPercent / 100);
-  const buyerProfitPerUnit = offer.unitSellPrice - commissionPerUnit;
+  const unitPrice = offer.offerPrice / offer.totalQuantity;
+  const unitProfit = offer.unitSellPrice - (offer.unitSellPrice * offer.commissionPercent / 100) - unitPrice;
+  const totalProfit = unitProfit * offer.totalQuantity;
 
   return (
     <View style={gs.safeArea}>
@@ -101,13 +102,13 @@ export default function MyOffer() {
                 <StatBox label={t("offer.remaining", { count: "" }).split(" ")[0] || "Left"} value={String(remaining)} color={remaining > 0 ? plate.primary : plate.textSecond} />
               </View>
 
-              <View style={{ borderTopWidth: 1, borderTopColor: plate.gray, marginTop: 12, paddingTop: 12 }}>
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <Text style={gs.label}>{t("offer.totalProfit")}</Text>
-                  <Text style={[gs.h2, { color: plate.green }]}>{offer.totalProfitDistributed.toFixed(2)} SYP</Text>
+                <View style={{ borderTopWidth: 1, borderTopColor: plate.gray, marginTop: 12, paddingTop: 12 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                    <Text style={gs.label}>{t("offer.totalProfit")}</Text>
+                    <Text style={[gs.h2, { color: plate.green }]}>{totalProfit.toFixed(2)} SYP</Text>
+                  </View>
+                  <Text style={gs.caption}>{t("offer.profitBreakdown", { profit: unitProfit.toFixed(2), qty: offer.totalQuantity })}</Text>
                 </View>
-                <Text style={gs.caption}>{buyerProfitPerUnit.toFixed(2)} SYP/unit after {offer.commissionPercent}% commission</Text>
-              </View>
             </View>
 
             {offer.purchases.length > 0 ? (

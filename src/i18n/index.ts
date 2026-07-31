@@ -3,6 +3,7 @@ import { getLocales } from "expo-localization";
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import { I18nManager } from "react-native";
+import { APP_PREFIX } from "@/config/constants";
 import ar from "./ar.json";
 import en from "./en.json";
 
@@ -11,7 +12,7 @@ const resources = {
   ar: { translation: ar },
 };
 
-const LANGUAGE_STORAGE_KEY = "@barbers-shop:language";
+const LANGUAGE_STORAGE_KEY = `${APP_PREFIX}:language`;
 
 export type LanguageCode = "en" | "ar";
 export async function initI18n() {
@@ -30,6 +31,8 @@ export async function initI18n() {
     fallbackLng: "en",
     interpolation: {
       escapeValue: false,
+      prefix: "{",
+      suffix: "}",
     },
   });
 

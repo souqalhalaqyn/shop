@@ -1,5 +1,4 @@
 import { useApiQuery, type ApiResponse } from "@/api";
-import { useExchangeRate } from "@/context/ExchangeRateContext";
 import { useGlobalStyles } from "@/styles/global";
 import { buildImageUrl } from "@/utils/imageUrl";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,8 +9,7 @@ import { ActivityIndicator, FlatList, Image, RefreshControl, Text, TouchableOpac
 interface AdContainer {
   _id: string;
   name: string; nameEn: string; nameAr: string;
-  shortDescription: string;
-  longDescription: string;
+  description: string;
 }
 
 interface AdProduct {
@@ -19,7 +17,7 @@ interface AdProduct {
   name: string; nameEn: string; nameAr: string;
   price: number;
   images: string[];
-  shortDescription: string;
+  description: string;
 }
 
 interface AdData {
@@ -33,7 +31,6 @@ interface AdData {
 export default function AdsList() {
   const { plate, gs } = useGlobalStyles();
   const { t } = useTranslation();
-  const { convert } = useExchangeRate();
 
   const { data, isLoading, refetch, isRefetching } = useApiQuery<ApiResponse<AdData[]>>({
     url: "ads",
@@ -64,7 +61,7 @@ export default function AdsList() {
             <Text style={gs.label} numberOfLines={1}>{item.container?.name}</Text>
             {product?.price != null && (
               <Text style={[gs.caption, { color: plate.primary, marginTop: 2 }]}>
-                {convert(product.price).toLocaleString()} SYP
+                {product.price.toLocaleString()} SYP
               </Text>
             )}
           </View>
@@ -75,14 +72,22 @@ export default function AdsList() {
 
   return (
     <View style={gs.container}>
-      <View style={[gs.containerRow, { paddingHorizontal: 20, paddingVertical: 16, justifyContent: "space-between" }]}>
+      <View style={{ paddingHorizontal: 20, paddingVertical: 16, gap: 12 }}>
         <Text style={gs.h1}>{t("ads.listTitle")}</Text>
-        <View style={{ flexDirection: "row", gap: 12 }}>
-          <TouchableOpacity onPress={() => (router.push as any)("/(drawer)/ads/history")}>
-            <Ionicons name="time-outline" size={24} color={plate.primary} />
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          <TouchableOpacity
+            onPress={() => (router.push as any)("/(drawer)/ads/history")}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 10, borderWidth: 1, borderColor: plate.primary, backgroundColor: plate.primary + "12" }}
+          >
+            <Ionicons name="time-outline" size={18} color={plate.primary} />
+            <Text style={{ fontSize: 13, fontWeight: "600", color: plate.primary }}>{t("ads.historyTitle")}</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => (router.push as any)("/(drawer)/ads/create")}>
-            <Ionicons name="add-circle-outline" size={24} color={plate.primary} />
+          <TouchableOpacity
+            onPress={() => (router.push as any)("/(drawer)/ads/create")}
+            style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 10, borderWidth: 1, borderColor: plate.primary, backgroundColor: plate.primary }}
+          >
+            <Ionicons name="add-circle-outline" size={18} color="#fff" />
+            <Text style={{ fontSize: 13, fontWeight: "600", color: "#fff" }}>{t("ads.createNew")}</Text>
           </TouchableOpacity>
         </View>
       </View>

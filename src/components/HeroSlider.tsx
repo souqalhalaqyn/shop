@@ -3,60 +3,62 @@ import { buildImageUrl } from "@/utils/imageUrl";
 import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Animated,
   Dimensions,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   View,
 } from "react-native";
 
+interface SlideEntry {
+  image: string;
+  productId?: string;
+}
+
 interface HeroSliderProps {
-  images: string[];
+  images: string[] | SlideEntry[];
+  onSlidePress?: (productId?: string) => void;
 }
 
 const SLIDE_DURATION = 4000;
-const FADE_DURATION = 400;
-const LONG_PRESS_DELAY = 200;
 const DOT_SIZE = 6;
 const DOT_SPACING = 6;
-const HERO_HEIGHT = 220;
+const HERO_HEIGHT = 280;
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-export default function HeroSlider({ images }: HeroSliderProps) {
+export default function HeroSlider({ images, onSlidePress }: HeroSliderProps) {
   const { plate, isDark } = useGlobalStyles();
 
   const slideCount = images?.length ?? 0;
+
+  const getSlideImage = (index: number): string => {
+    const item = images[index];
+    return typeof item === "string" ? item : item?.image ?? "";
+  };
+
+  const getSlideProductId = (index: number): string | undefined => {
+    const item = images[index];
+    return typeof item === "string" ? undefined : item?.productId;
+  };
+
   const dotColor = isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)";
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState<number | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scrollRef = useRef<ScrollView>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pressLocationRef = useRef(0);
-  const isLongPressRef = useRef(false);
   const mountedRef = useRef(true);
-  const currentIndexRef = useRef(0);
-  const isPausedRef = useRef(false);
+  const pausedRef = useRef(false);
+  const indexRef = useRef(0);
 
   useEffect(() => {
     return () => {
       mountedRef.current = false;
     };
   }, []);
-
-  useEffect(() => {
-    currentIndexRef.current = currentIndex;
-  }, [currentIndex]);
-
-  useEffect(() => {
-    isPausedRef.current = isPaused;
-  }, [isPaused]);
 
   useEffect(() => {
     setFailedImages(new Set());
@@ -69,104 +71,44 @@ export default function HeroSlider({ images }: HeroSliderProps) {
     }
   }, []);
 
-  const startAutoAdvanceRef = useRef<() => void>(() => {});
-  const advanceToNextRef = useRef<() => void>(() => {});
-  const goToSlideRef = useRef<(index: number) => void>(() => {});
-
-  startAutoAdvanceRef.current = useCallback(() => {
+  const startAutoAdvance = useCallback(() => {
     if (slideCount <= 1) return;
     clearTimer();
     timerRef.current = setTimeout(() => {
-      advanceToNextRef.current();
+      if (!mountedRef.current || pausedRef.current) return;
+      const next = (indexRef.current + 1) % slideCount;
+      indexRef.current = next;
+      setCurrentIndex(next);
+      scrollRef.current?.scrollTo({ x: next * SCREEN_WIDTH, animated: true });
+      startAutoAdvance();
     }, SLIDE_DURATION);
   }, [clearTimer, slideCount]);
 
-  goToSlideRef.current = useCallback(
-    (newIndex: number) => {
-      if (newIndex === currentIndexRef.current) return;
-      clearTimer();
-
-      const oldIndex = currentIndexRef.current;
-      currentIndexRef.current = newIndex;
-      setCurrentIndex(newIndex);
-      setPrevIndex(oldIndex);
-      fadeAnim.setValue(1);
-
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: FADE_DURATION,
-        useNativeDriver: false,
-      }).start(() => {
-        if (!mountedRef.current) return;
-        setPrevIndex(null);
-        if (!isPausedRef.current) {
-          startAutoAdvanceRef.current();
-        }
-      });
-    },
-    [clearTimer, fadeAnim],
-  );
-
-  advanceToNextRef.current = useCallback(() => {
-    goToSlideRef.current((currentIndexRef.current + 1) % slideCount);
-  }, [slideCount]);
-
-  const pause = useCallback(() => {
-    if (isPausedRef.current) return;
-    setIsPaused(true);
-    clearTimer();
-  }, [clearTimer]);
-
-  const resume = useCallback(() => {
-    if (!isPausedRef.current) return;
-    setIsPaused(false);
-    advanceToNextRef.current();
-  }, []);
-
-  const handlePressIn = useCallback(
-    (e: { nativeEvent: { locationX: number } }) => {
-      pressLocationRef.current = e.nativeEvent.locationX;
-      isLongPressRef.current = false;
-      longPressTimerRef.current = setTimeout(() => {
-        isLongPressRef.current = true;
-        pause();
-      }, LONG_PRESS_DELAY);
-    },
-    [pause],
-  );
-
-  const handlePressOut = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
-    if (isLongPressRef.current) {
-      isLongPressRef.current = false;
-      resume();
-    } else {
-      const x = pressLocationRef.current;
-      if (x < SCREEN_WIDTH / 2) {
-        goToSlideRef.current(
-          (currentIndexRef.current - 1 + slideCount) % slideCount,
-        );
-      } else {
-        advanceToNextRef.current();
-      }
-    }
-  }, [slideCount, resume]);
-
   useEffect(() => {
+    indexRef.current = 0;
     setCurrentIndex(0);
-    setPrevIndex(null);
-    setIsPaused(false);
-    isLongPressRef.current = false;
+    pausedRef.current = false;
     clearTimer();
-    fadeAnim.setValue(0);
-    startAutoAdvanceRef.current();
+    scrollRef.current?.scrollTo({ x: 0, animated: false });
+    startAutoAdvance();
     return () => {
       clearTimer();
     };
-  }, [images, clearTimer, fadeAnim]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [images]);
+
+  const handleMomentumEnd = (e: any) => {
+    const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    indexRef.current = index;
+    setCurrentIndex(index);
+  };
+
+  const handlePress = (index: number) => {
+    const productId = getSlideProductId(index);
+    if (productId) {
+      onSlidePress?.(productId);
+    }
+  };
 
   const markFailed = (index: number) =>
     setFailedImages((prev) => new Set(prev).add(index));
@@ -190,8 +132,16 @@ export default function HeroSlider({ images }: HeroSliderProps) {
     );
   }
 
-  const renderSlideContent = (index: number) => {
+  const renderSlide = (index: number) => {
     if (failedImages.has(index)) {
+      return (
+        <View style={[styles.slide, { backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }]}>
+          <Ionicons name="image-outline" size={48} color={plate.textSecond} />
+        </View>
+      );
+    }
+    const imageUrl = getSlideImage(index);
+    if (!imageUrl) {
       return (
         <View style={[styles.slide, { backgroundColor: plate.gray, justifyContent: "center", alignItems: "center" }]}>
           <Ionicons name="image-outline" size={48} color={plate.textSecond} />
@@ -200,12 +150,22 @@ export default function HeroSlider({ images }: HeroSliderProps) {
     }
     return (
       <Image
-        source={{ uri: buildImageUrl(images[index]!) }}
+        source={{ uri: buildImageUrl(imageUrl) }}
         style={styles.slide}
         resizeMode="cover"
         onError={() => markFailed(index)}
       />
     );
+  };
+
+  const pause = () => {
+    pausedRef.current = true;
+    clearTimer();
+  };
+
+  const resumeAdvance = () => {
+    pausedRef.current = false;
+    startAutoAdvance();
   };
 
   return (
@@ -219,42 +179,42 @@ export default function HeroSlider({ images }: HeroSliderProps) {
         },
       ]}
     >
-      <View style={styles.slideWrapper}>
-        {renderSlideContent(currentIndex)}
-      </View>
-
-      {prevIndex !== null && prevIndex >= 0 && prevIndex < slideCount && (
-        <Animated.View
-          style={[styles.overlay, { opacity: fadeAnim }]}
-          pointerEvents="none"
-        >
-          {renderSlideContent(prevIndex)}
-        </Animated.View>
-      )}
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        bounces={false}
+        onMomentumScrollEnd={handleMomentumEnd}
+        onScrollBeginDrag={pause}
+        onScrollEndDrag={resumeAdvance}
+        scrollEnabled={slideCount > 1}
+      >
+        {Array.from({ length: slideCount }, (_, i) => (
+          <Pressable
+            key={i}
+            onPress={() => handlePress(i)}
+            style={{ width: SCREEN_WIDTH, height: HERO_HEIGHT }}
+          >
+            {renderSlide(i)}
+          </Pressable>
+        ))}
+      </ScrollView>
 
       {slideCount > 1 && (
-        <>
-          <Pressable
-            style={styles.touchArea}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-          />
-
-          <View style={styles.dotsRow}>
-            {images.map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.dot,
-                  {
-                    backgroundColor:
-                      index === currentIndex ? "#fff" : dotColor,
-                  },
-                ]}
-              />
-            ))}
-          </View>
-        </>
+        <View style={styles.dotsRow}>
+          {Array.from({ length: slideCount }, (_, i) => (
+            <View
+              key={i}
+              style={[
+                styles.dot,
+                {
+                  backgroundColor: i === currentIndex ? "#fff" : dotColor,
+                },
+              ]}
+            />
+          ))}
+        </View>
       )}
     </View>
   );
@@ -265,28 +225,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     position: "relative",
   },
-  slideWrapper: {
-    width: "100%",
-    height: "100%",
-  },
   slide: {
     width: "100%",
     height: "100%",
-  },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  touchArea: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 5,
   },
   dotsRow: {
     position: "absolute",

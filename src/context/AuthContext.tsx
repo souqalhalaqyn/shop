@@ -1,5 +1,6 @@
 import { getApiClient, setApiToken, configureApi } from "@/api";
 import { getErrorMessage } from "@/api/utils/errorHandler";
+import { APP_PREFIX } from "@/config/constants";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
   createContext,
@@ -11,8 +12,8 @@ import React, {
   type ReactNode,
 } from "react";
 
-const AUTH_STORAGE_KEY = "@barbers-shop:auth";
-const STORAGE_PREFIX = "@barbers-shop:";
+const AUTH_STORAGE_KEY = `${APP_PREFIX}:auth`;
+const STORAGE_PREFIX = `${APP_PREFIX}:`;
 
 export function clearAppStorage() {
   return AsyncStorage.getAllKeys().then((keys) => {
@@ -26,15 +27,20 @@ interface AuthUser {
   phone: string;
   role: string;
   name?: string;
+  mustChangePassword?: boolean;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  mustChangePassword: boolean;
   signup: (phone: string, password: string) => Promise<void>;
   login: (phone: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  changePassword: (newPassword: string) => Promise<void>;
+  clearMustChangePassword: () => void;
+  updateUser: (updates: Partial<AuthUser>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -42,6 +48,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const tokensRef = useRef<{ accessToken: string; refreshToken: string } | null>(null);
 
   useEffect(() => {
@@ -55,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             refreshToken: string;
           };
           setUser(parsed.user);
+          setMustChangePassword(!!parsed.user.mustChangePassword);
           tokensRef.current = { accessToken: parsed.accessToken, refreshToken: parsed.refreshToken };
           setApiToken(parsed.accessToken);
         }
@@ -96,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshToken: string,
   ) => {
     tokensRef.current = { accessToken, refreshToken };
+    setMustChangePassword(!!userData.mustChangePassword);
     await AsyncStorage.setItem(
       AUTH_STORAGE_KEY,
       JSON.stringify({ user: userData, accessToken, refreshToken }),
@@ -151,20 +160,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await clearAppStorage();
       setUser(null);
       setApiToken(null);
+      setMustChangePassword(false);
     }
   }, []);
 
+  const changePassword = useCallback(async (newPassword: string) => {
+    const client = getApiClient();
+    await client.post("auth/change-password", { newPassword });
+    setMustChangePassword(false);
+    if (user) {
+      const updated = { ...user, mustChangePassword: false };
+      await AsyncStorage.setItem(
+        AUTH_STORAGE_KEY,
+        JSON.stringify({ user: updated, accessToken: tokensRef.current?.accessToken, refreshToken: tokensRef.current?.refreshToken }),
+      );
+      setUser(updated);
+    }
+  }, [user]);
+
+  const clearMustChangePassword = useCallback(() => {
+    setMustChangePassword(false);
+  }, []);
+
+  const updateUser = useCallback(async (updates: Partial<AuthUser>) => {
+    if (!user) return;
+    const updated = { ...user, ...updates };
+    await AsyncStorage.setItem(
+      AUTH_STORAGE_KEY,
+      JSON.stringify({ user: updated, accessToken: tokensRef.current?.accessToken, refreshToken: tokensRef.current?.refreshToken }),
+    );
+    setUser(updated);
+  }, [user]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        signup,
-        login,
-        logout,
-      }}
-    >
+      <AuthContext.Provider
+        value={{
+          user,
+          isAuthenticated: !!user,
+          isLoading,
+          mustChangePassword,
+          signup,
+          login,
+          logout,
+          changePassword,
+          clearMustChangePassword,
+          updateUser,
+        }}
+      >
       {children}
     </AuthContext.Provider>
   );

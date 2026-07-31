@@ -30,7 +30,9 @@ export default function SearchBar({
         { backgroundColor: plate.backgroundSecond },
       ]}
     >
-      <Ionicons name="search" size={20} color={plate.textSecond} />
+      <TouchableOpacity onPress={() => onSubmit?.(value)} style={{ padding: 8 }}>
+        <Ionicons name="search" size={22} color={plate.textSecond} />
+      </TouchableOpacity>
 
       <TextInput
         style={[gs.input]}

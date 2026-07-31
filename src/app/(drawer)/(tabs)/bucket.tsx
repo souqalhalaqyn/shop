@@ -7,19 +7,19 @@ import { buildImageUrl } from "@/utils/imageUrl";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
+import { router, useFocusEffect, useNavigation } from "expo-router";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   Image,
   Linking,
   Modal,
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -38,10 +38,29 @@ const SHAM_CASH_DEEP_LINK = `shamcash://pay/${SHAM_CASH_MERCHANT_ID}`;
 export default function Bucket() {
   const { gs, plate } = useGlobalStyles();
   const { t } = useTranslation();
+  const navigation = useNavigation();
+
+  useFocusEffect(
+    useCallback(() => {
+      const parent = navigation.getParent();
+      if (parent) {
+        parent.setOptions({
+          headerStyle: { backgroundColor: plate.backgroundSecond, borderBottomWidth: 1, borderBottomColor: plate.gray },
+        });
+      }
+      return () => {
+        if (parent) {
+          parent.setOptions({
+            headerStyle: { backgroundColor: plate.backgroundSecond, borderBottomWidth: 0 },
+          });
+        }
+      };
+    }, [navigation, plate.backgroundSecond]),
+  );
   const { isAuthenticated } = useAuth();
 
   const [showForm, setShowForm] = useState(false);
-  const [amount, setAmount] = useState("");
+  const [showQR, setShowQR] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -83,11 +102,6 @@ export default function Bucket() {
   };
 
   const submitRequest = useCallback(async () => {
-    const amountNum = Number(amount);
-    if (!amountNum || amountNum <= 0) {
-      Alert.alert("", t("bucket.invalidAmount"));
-      return;
-    }
     if (!imageUri) {
       Alert.alert("", t("bucket.selectPhoto"));
       return;
@@ -96,7 +110,6 @@ export default function Bucket() {
     setSubmitting(true);
     try {
       const formData = new FormData();
-      formData.append("amount", String(amountNum));
       formData.append("image", {
         uri: imageUri,
         type: getFileType(imageUri),
@@ -104,22 +117,37 @@ export default function Bucket() {
       } as any);
 
       const client = getApiClient();
-      await client.post("charge-requests", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const baseUrl = client.defaults.baseURL ?? "";
+      const token = client.defaults.headers.common.Authorization as string | undefined;
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", baseUrl + "charge-requests");
+        xhr.timeout = 120000;
+        if (token) xhr.setRequestHeader("Authorization", token);
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`Upload failed: ${xhr.status}`));
+        };
+
+        xhr.onerror = () => reject(new Error("Network error"));
+        xhr.ontimeout = () => reject(new Error("Upload timed out"));
+
+        xhr.send(formData);
       });
 
       Alert.alert("", t("bucket.requestSubmitted"));
       setShowForm(false);
-      setAmount("");
       setImageUri(null);
       refetchRequests();
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || t("bucket.requestFailed");
+      const msg = err?.message || t("bucket.requestFailed");
       Alert.alert(t("common.error"), msg);
     } finally {
       setSubmitting(false);
     }
-  }, [amount, imageUri, t, refetchRequests]);
+  }, [imageUri, t, refetchRequests]);
 
   const handleOpenShamCash = useCallback(async () => {
     const copied = await Clipboard.setStringAsync(SHAM_CASH_MERCHANT_ID);
@@ -182,11 +210,13 @@ export default function Bucket() {
         <Ionicons name="cash" size={40} color={plate.primary} />
         <Text style={[gs.h2, { marginTop: 12 }]}>{t("bucket.shamCash")}</Text>
 
-        <Image
-          source={require("@/assets/sham.jpeg")}
-          style={{ width: 180, height: 180, marginTop: 16, borderRadius: 12 }}
-          resizeMode="contain"
-        />
+        <TouchableOpacity onPress={() => setShowQR(true)}>
+          <Image
+            source={require("@/assets/sham.jpeg")}
+            style={{ width: 180, height: 180, marginTop: 16, borderRadius: 12 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
         <Text style={[gs.caption, { marginTop: 8, textAlign: "center" }]}>{t("bucket.scanQr")}</Text>
 
         <TouchableOpacity
@@ -220,7 +250,11 @@ export default function Bucket() {
               </View>
             )}
             <View style={{ flex: 1 }}>
-              <Text style={gs.label}>{req.amount.toFixed(2)} SYP</Text>
+              {req.status === "pending" ? (
+                <Text style={gs.label}>{t("bucket.pending")}</Text>
+              ) : (
+                <Text style={gs.label}>{req.amount.toFixed(2)} SYP</Text>
+              )}
               <Text style={gs.caption}>{new Date(req.createdAt).toLocaleDateString()}</Text>
             </View>
             <View style={{ backgroundColor: statusColor(req.status) + "20", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 }}>
@@ -235,15 +269,6 @@ export default function Bucket() {
           <View style={[gs.cardElevated, { backgroundColor: plate.background, padding: 24, borderTopLeftRadius: 20, borderTopRightRadius: 20 }]}>
             <Text style={[gs.h2, { marginBottom: 16 }]}>{t("bucket.paymentProof")}</Text>
 
-            <TextInput
-              style={[gs.input, { marginBottom: 12 }]}
-              placeholder={t("bucket.amountPlaceholder")}
-              placeholderTextColor={plate.textSecond}
-              keyboardType="numeric"
-              value={amount}
-              onChangeText={setAmount}
-            />
-
             <TouchableOpacity style={[gs.button, { marginBottom: 16, backgroundColor: plate.gray }]} onPress={pickImage}>
               <Ionicons name="image-outline" size={20} color={plate.text} style={{ marginRight: 8 }} />
               <Text style={[gs.buttonText, { color: plate.text }]}>{t("bucket.selectPhoto")}</Text>
@@ -256,7 +281,7 @@ export default function Bucket() {
             <View style={{ flexDirection: "row", gap: 12 }}>
               <TouchableOpacity
                 style={[gs.button, { flex: 1, backgroundColor: plate.gray }]}
-                onPress={() => { setShowForm(false); setImageUri(null); setAmount(""); }}
+                onPress={() => { setShowForm(false); setImageUri(null); }}
               >
                 <Text style={[gs.buttonText, { color: plate.text }]}>{t("common.cancel")}</Text>
               </TouchableOpacity>
@@ -269,6 +294,22 @@ export default function Bucket() {
               </TouchableOpacity>
             </View>
           </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showQR} transparent animationType="fade">
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.95)", justifyContent: "center", alignItems: "center" }}>
+          <TouchableOpacity
+            onPress={() => setShowQR(false)}
+            style={{ position: "absolute", top: 50, right: 20, zIndex: 10, padding: 8 }}
+          >
+            <Ionicons name="close" size={32} color="#fff" />
+          </TouchableOpacity>
+          <Image
+            source={require("@/assets/sham.jpeg")}
+            style={{ width: Dimensions.get("window").width - 40, height: Dimensions.get("window").width - 40 }}
+            resizeMode="contain"
+          />
         </View>
       </Modal>
     </ScrollView>
