@@ -1,5 +1,7 @@
 {
-  "application": { "name": "Barbers Shop" },
+  "application": {
+    "name": "Barbers Shop"
+  },
   "common": {
     "search": "Search...",
     "filters": "Filters",
@@ -29,7 +31,6 @@
     "required": "Required",
     "anonymous": "Anonymous"
   },
-
   "navigation": {
     "home": "Home",
     "cart": "Cart",
@@ -47,11 +48,9 @@
     "whatsappGroup": "WhatsApp Group",
     "shareApp": "Share App"
   },
-
   "keywords": {
     "categories": "Categories"
   },
-
   "search": {
     "relevance": "Relevance",
     "priceLow": "Price: Low to High",
@@ -61,14 +60,12 @@
     "noResultsSimple": "No results",
     "placeholder": "Search for products..."
   },
-
   "pages": {
     "comingSoon": "Coming Soon...",
     "topProducts": "Top Products",
     "ads": "Ads",
     "offers": "Offers"
   },
-
   "orders": {
     "title": "My Orders",
     "empty": "No orders yet",
@@ -94,7 +91,6 @@
     "placeFailed": "Failed to place order",
     "location": "Location"
   },
-
   "bucket": {
     "balance": "Current Balance",
     "charge": "Charge Your Wallet",
@@ -123,7 +119,6 @@
     "appNotInstalled": "Sham Cash app is not installed. Merchant ID copied to clipboard.",
     "idCopied": "Merchant ID copied to clipboard"
   },
-
   "product": {
     "price": "Price",
     "description": "Description",
@@ -138,7 +133,6 @@
     "rateThisProduct": "Rate this product",
     "writeComment": "Write a comment..."
   },
-
   "auth": {
     "loginTitle": "Welcome Back",
     "createAccount": "Create Account",
@@ -159,20 +153,24 @@
     "newPasswordPlaceholder": "New password",
     "changePasswordButton": "Change Password"
   },
-
   "settings": {
     "title": "Settings",
     "theme": "Theme",
     "language": "Language",
-    "themeOptions": { "system": "System", "light": "Light", "dark": "Dark" },
+    "themeOptions": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
     "logout": "Logout",
     "logoutConfirm": "Are you sure you want to logout?",
     "cancel": "Cancel",
     "account": "Account"
   },
-
-  "language": { "english": "English", "arabic": "العربية" },
-
+  "language": {
+    "english": "English",
+    "arabic": "العربية"
+  },
   "cart": {
     "empty": "Cart is empty",
     "purchase": "Purchase",
@@ -224,11 +222,9 @@
     "confirmOrder": "Confirm Order",
     "next": "Next"
   },
-
   "categories": {
     "showMore": "Show more"
   },
-
   "offer": {
     "listTitle": "Available Offers",
     "emptyList": "No offers available",
@@ -289,8 +285,10 @@
     "description": "A new version of the app is available. Please download the latest version and reinstall.",
     "currentVersion": "Current Version",
     "newVersion": "New Version",
-    "instructions": "After downloading, please uninstall the old app first, then install the new APK file.",
-    "downloadButton": "Download Latest Version"
+    "instructions": "The download starts automatically, then just follow the install prompt. The new version replaces the old one and your data stays safe.",
+    "downloadButton": "Download Latest Version",
+    "downloading": "Downloading...",
+    "downloadError": "Download failed. Please check your connection and try again."
   },
   "containerForm": {
     "nameEn": "Name (English)",
@@ -320,7 +318,7 @@
     "tagsArPlaceholder": "وسوم مفصولة بفواصل"
   },
   "sharing": {
-    "shareProduct": "Check out this product: {name}\n{url}\n\nOpen in app: {deepLink}\nInstall the app: {installUrl}",
-    "shareApp": "Download the app: {url}\n\nOpen in app: {deepLink}\nInstall from: {installUrl}"
+    "shareProduct": "🛍️ Check this product: {name}\n🔗 Open in app: {url}\n\n📲 Download the app: {installUrl}",
+    "shareApp": "📲 Download the app 👇\n{url}"
   }
 }

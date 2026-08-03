@@ -1,5 +1,7 @@
 {
-  "application": { "name": "سوق الحلاقين" },
+  "application": {
+    "name": "سوق الحلاقين"
+  },
   "common": {
     "search": "بحث...",
     "filters": "تصفية",
@@ -46,8 +48,9 @@
     "whatsappGroup": "مجموعة واتساب",
     "shareApp": "مشاركة التطبيق"
   },
-  "keywords": { "categories": "الفئات" },
-
+  "keywords": {
+    "categories": "الفئات"
+  },
   "search": {
     "relevance": "الأكثر صلة",
     "priceLow": "السعر: من الأقل إلى الأعلى",
@@ -57,7 +60,6 @@
     "noResultsSimple": "لا توجد نتائج",
     "placeholder": "ابحث عن منتجات..."
   },
-
   "pages": {
     "comingSoon": "قريباً...",
     "shopsSoon": "المحلات قريباً...",
@@ -118,7 +120,6 @@
     "appNotInstalled": "تطبيق شام كاش غير مثبت. تم نسخ المعرف إلى الحافظة.",
     "idCopied": "تم نسخ المعرف إلى الحافظة"
   },
-
   "product": {
     "price": "السعر",
     "description": "الوصف",
@@ -157,14 +158,20 @@
     "title": "الإعدادات",
     "theme": "المظهر",
     "language": "اللغة",
-    "themeOptions": { "system": "تلقائي", "light": "فاتح", "dark": "داكن" },
+    "themeOptions": {
+      "system": "تلقائي",
+      "light": "فاتح",
+      "dark": "داكن"
+    },
     "logout": "تسجيل خروج",
     "logoutConfirm": "هل أنت متأكد من تسجيل الخروج؟",
     "cancel": "إلغاء",
     "account": "الحساب"
   },
-  "language": { "english": "English", "arabic": "العربية" },
-
+  "language": {
+    "english": "English",
+    "arabic": "العربية"
+  },
   "cart": {
     "empty": "السلة فارغة",
     "purchase": "شراء",
@@ -216,11 +223,9 @@
     "confirmOrder": "تأكيد الطلب",
     "next": "التالي"
   },
-
   "categories": {
     "showMore": "عرض المزيد"
   },
-
   "offer": {
     "listTitle": "العروض المتاحة",
     "emptyList": "لا توجد عروض متاحة",
@@ -281,8 +286,10 @@
     "description": "نسخة جديدة من التطبيق متاحة. يرجى تنزيل أحدث إصدار وإعادة التثبيت.",
     "currentVersion": "النسخة الحالية",
     "newVersion": "النسخة الجديدة",
-    "instructions": "بعد التنزيل، يرجى إلغاء تثبيت التطبيق القديم أولاً، ثم تثبيت ملف APK الجديد.",
-    "downloadButton": "تنزيل أحدث إصدار"
+    "instructions": "يبدأ التنزيل تلقائياً، ثم اتبع تعليمات التثبيت. النسخة الجديدة تحل محل القديمة وبياناتك تبقى آمنة.",
+    "downloadButton": "تنزيل أحدث إصدار",
+    "downloading": "جارٍ التنزيل...",
+    "downloadError": "فشل التنزيل. تحقق من اتصالك وحاول مرة أخرى."
   },
   "containerForm": {
     "nameEn": "الاسم (إنجليزي)",
@@ -312,7 +319,7 @@
     "tagsArPlaceholder": "وسوم مفصولة بفواصل"
   },
   "sharing": {
-    "shareProduct": "تفقد هذا المنتج: {name}\n{url}\n\nافتح في التطبيق: {deepLink}\nحمل التطبيق من: {installUrl}",
-    "shareApp": "حمل التطبيق: {url}\n\nافتح في التطبيق: {deepLink}\nتثبيت من: {installUrl}"
+    "shareProduct": "🛍️ شاهد هذا المنتج: {name}\n🔗 افتح في التطبيق: {url}\n\n📲 حمّل التطبيق: {installUrl}",
+    "shareApp": "📲 حمّل التطبيق 👇\n{url}"
   }
 }

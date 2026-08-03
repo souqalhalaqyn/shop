@@ -70,7 +70,7 @@ export default function CategoryDetail() {
         </TouchableOpacity>
       );
     },
-    [gs, plate],
+    [gs, plate, formatSYP],
   );
 
   if (isLoading) {

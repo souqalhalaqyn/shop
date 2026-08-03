@@ -2,7 +2,7 @@
   "expo": {
     "name": "Barber Shop",
     "slug": "souqalhalaqeen",
-    "version": "1.0.0",
+    "version": "2.1.1",
     "orientation": "portrait",
     "icon": "./assets/1024x1024.png",
     "scheme": "barbersshop",
@@ -13,7 +13,6 @@
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Access to your photos is needed to upload payment receipts and product images.",
         "LSApplicationQueriesSchemes": [
-          "shamcash",
           "shamcash"
         ],
         "ITSAppUsesNonExemptEncryption": false
@@ -47,6 +46,20 @@
             "BROWSABLE",
             "DEFAULT"
           ]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "souqalhlaqyn.duckdns.org"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -73,9 +86,7 @@
       [
         "expo-build-properties",
         {
-          "android": {
-            "usesCleartextTraffic": true
-          },
+          "android": {},
           "ios": {
             "deploymentTarget": "15.1"
           }
@@ -89,7 +100,8 @@
           "ar": "سوق الحلاقين"
         }
       ],
-      "expo-video"
+      "expo-video",
+      "./plugins/withApkInstaller.js"
     ],
     "experiments": {
       "typedRoutes": true,

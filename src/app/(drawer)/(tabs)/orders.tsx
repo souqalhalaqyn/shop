@@ -70,7 +70,7 @@ export default function OrdersScreen() {
           });
         }
       };
-    }, [navigation, plate.backgroundSecond]),
+    }, [navigation, plate.backgroundSecond, plate.gray]),
   );
   const { isAuthenticated } = useAuth();
   const { formatSYP } = usePrice();

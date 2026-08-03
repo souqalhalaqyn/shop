@@ -55,7 +55,7 @@ export default function Bucket() {
           });
         }
       };
-    }, [navigation, plate.backgroundSecond]),
+    }, [navigation, plate.backgroundSecond, plate.gray]),
   );
   const { isAuthenticated } = useAuth();
 

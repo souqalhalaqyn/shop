@@ -6,6 +6,7 @@ import { ExchangeRateProvider } from "@/context/ExchangeRateContext";
 import { initI18n } from "@/i18n";
 import { APP_VERSION } from "@/config/constants";
 import UpdateScreen from "@/components/UpdateScreen";
+import { downloadAndInstallApk } from "@/utils/installApk";
 import { ThemeProvider } from "@react-navigation/native";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
@@ -39,9 +40,14 @@ async function registerForPushNotificationsAsync() {
     return;
   }
 
-  const tokenData = await Notifications.getExpoPushTokenAsync({
-    projectId: Constants.expoConfig?.extra?.eas?.projectId,
-  });
+  let tokenData;
+  try {
+    tokenData = await Notifications.getExpoPushTokenAsync({
+      projectId: Constants.expoConfig?.extra?.eas?.projectId,
+    });
+  } catch {
+    return;
+  }
   const token = tokenData.data;
 
   if (Platform.OS === "android") {
@@ -67,11 +73,13 @@ function InnerLayout() {
   useEffect(() => {
     if (isLoading || !isAuthenticated) return;
 
-    registerForPushNotificationsAsync().then((token) => {
-      if (token) {
-        getApiClient().post("auth/register-push-token", { expoPushToken: token });
-      }
-    });
+    registerForPushNotificationsAsync()
+      .then((token) => {
+        if (token) {
+          getApiClient().post("auth/register-push-token", { expoPushToken: token }).catch(() => {});
+        }
+      })
+      .catch(() => {});
 
     notificationListenerRef.current = Notifications.addNotificationReceivedListener(() => {});
 
@@ -110,11 +118,17 @@ function InnerLayout() {
         responseListenerRef.current.remove();
       }
     };
-  }, [isLoading, isAuthenticated]);
+  }, [isLoading, isAuthenticated, router]);
 
   useEffect(() => {
     function handleUrl(url: string | null) {
       if (!url) return;
+      if (url.includes("/api/v1/app-versions/apk/")) {
+        if (Platform.OS === "android") {
+          downloadAndInstallApk(url).catch(() => {});
+        }
+        return;
+      }
       const params = new URL(url).searchParams;
       const containerId = params.get("container");
       if (containerId) {
@@ -126,7 +140,7 @@ function InnerLayout() {
     Linking.getInitialURL().then(handleUrl);
     const sub = Linking.addEventListener("url", (e) => handleUrl(e.url));
     return () => sub.remove();
-  }, []);
+  }, [router]);
 
   if (isLoading) {
     return (

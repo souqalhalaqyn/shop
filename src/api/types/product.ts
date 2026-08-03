@@ -3,6 +3,7 @@ export interface ContainerProduct {
   name: string;
   shortDescription: string;
   longDescription: string;
+  description?: string;
   images: string[];
   price: number;
   stock: number;
@@ -11,6 +12,8 @@ export interface ContainerProduct {
   notes: string[];
   isActive: boolean;
   currency?: string;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 export interface Container {

@@ -29,14 +29,13 @@ export default function OffersList() {
     queryKey: ["api", "offers", "list"],
   });
 
-  const { data: myOfferData, isLoading: myOfferLoading } = useApiQuery<ApiResponse<any>>({
+  const { isLoading: myOfferLoading } = useApiQuery<ApiResponse<any>>({
     url: "offers/mine",
     queryKey: ["api", "offers", "mine"],
     enabled: isAuthenticated,
   });
 
   const offers = data?.data ?? [];
-  const myOffer = myOfferData?.data;
 
   if (isLoading) {
     return (

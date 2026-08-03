@@ -22,12 +22,12 @@ interface AdItem {
     name: string;
     description: string;
   };
-  products: Array<{
+  products: {
     name: string;
     price: number;
     images: string[];
     description: string;
-  }>;
+  }[];
 }
 
 interface AdsBarProps {

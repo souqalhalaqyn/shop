@@ -24,14 +24,14 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 interface AdDetail {
   _id: string;
   container: { name: string };
-  products: Array<{
+  products: {
     _id: string;
     name: string;
     price: number;
     images: string[];
     description: string;
     tags: string[];
-  }>;
+  }[];
   contactPhone?: string;
   createdAt: string;
 }
@@ -39,7 +39,7 @@ interface AdDetail {
 interface AdItem {
   _id: string;
   container: { name: string };
-  products: Array<{ name: string; price: number; images: string[] }>;
+  products: { name: string; price: number; images: string[] }[];
 }
 
 export default function AdDetailScreen() {
@@ -60,8 +60,6 @@ export default function AdDetailScreen() {
 
   const ad = data?.data;
   const products = ad?.products ?? [];
-  const product = products[productPage];
-  const images = product?.images ?? [];
 
   const {
     data: moreAdsData,

@@ -8,8 +8,7 @@ import SearchBar from "@/components/Searchbar";
 import TopContainersBar from "@/components/TopContainersBar";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useNavigation } from "expo-router";
-import { useCallback } from "react";
-import { useState } from "react";
+import { useCallback , useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 

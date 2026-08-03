@@ -50,7 +50,7 @@ export default function SearchScreen() {
     fetchNextPage,
     refetch,
     isRefetching,
-  } = useInfiniteApiQuery<Container[]>({
+  } = useInfiniteApiQuery<Container>({
     url: hasQuery ? "search" : "containers",
     params,
     queryKey: queryKeys.resource("search").list({ q: searchQuery, sort: hasQuery ? sort : "relevance" }),

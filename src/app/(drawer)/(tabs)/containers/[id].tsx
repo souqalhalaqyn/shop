@@ -13,9 +13,9 @@ import {
   Alert,
   Dimensions,
   FlatList,
-  Linking,
   Modal,
   ScrollView,
+  Share,
   Text,
   TextInput,
   TouchableOpacity,
@@ -135,10 +135,9 @@ export default function ContainerDetail() {
 
   const handleShareProduct = () => {
     if (!appUrl || !product || !container) return;
-    const deepLink = `barbersshop:///(drawer)/(tabs)/containers/${container._id}?product=${productPage}`;
-    const productUrl = `${appUrl}?container=${container._id}&product=${productPage}`;
-    const msg = encodeURIComponent(t("sharing.shareProduct", { name: product.name, url: productUrl, deepLink, installUrl: appUrl }));
-    Linking.openURL(`https://wa.me/?text=${msg}`).catch(() => {});
+    const url = `${appUrl}?container=${container._id}&product=${productPage}`;
+    const msg = t("sharing.shareProduct", { name: product.name, url, installUrl: appUrl });
+    Share.share({ message: msg }).catch(() => {});
   };
 
   const handleOpenRating = () => {
@@ -196,6 +195,7 @@ export default function ContainerDetail() {
               pagingEnabled
               showsHorizontalScrollIndicator={false}
               nestedScrollEnabled
+              canCancelContentTouches={false}
               onMomentumScrollEnd={(e) => {
                 const idx = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 40));
                 handleImageChange(productPage, idx);

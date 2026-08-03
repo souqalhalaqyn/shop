@@ -16,6 +16,7 @@ import {
   Alert,
   Dimensions,
   Linking,
+  Share,
   Text,
   TouchableOpacity,
   View,
@@ -38,9 +39,8 @@ export default function DrawerLayout() {
 
   const handleShareApp = () => {
     if (!appUrl) return;
-    const deepLink = "barbersshop://";
-    const msg = encodeURIComponent(t("sharing.shareApp", { url: appUrl, deepLink, installUrl: appUrl }));
-    Linking.openURL(`https://wa.me/?text=${msg}`).catch(() => {
+    const msg = t("sharing.shareApp", { url: appUrl });
+    Share.share({ message: msg }).catch(() => {
       Alert.alert("", t("bucket.failedWhatsApp"));
     });
   };

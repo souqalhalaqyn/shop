@@ -20,7 +20,7 @@ interface OfferDetail {
   product: { _id: string; name: string; images: string[]; price: number; description?: string; tags?: string[] };
 }
 
-export default function OfferDetail() {
+export default function OfferDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { plate, gs } = useGlobalStyles();
   const { t } = useTranslation();
@@ -115,8 +115,8 @@ export default function OfferDetail() {
         </View>
       </View>
 
-      {offer.product.longDescription ? (
-        <Text style={[gs.text, { marginTop: 16 }]}>{offer.product.longDescription}</Text>
+      {offer.product.description ? (
+        <Text style={[gs.text, { marginTop: 16 }]}>{offer.product.description}</Text>
       ) : null}
 
       {offer.product.tags && offer.product.tags.length > 0 ? (

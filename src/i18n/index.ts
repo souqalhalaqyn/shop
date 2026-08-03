@@ -1,8 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getLocales } from "expo-localization";
-import i18n from "i18next";
+import * as Updates from "expo-updates";
+import i18n, { changeLanguage as setI18nLanguage } from "i18next";
 import { initReactI18next } from "react-i18next";
-import { I18nManager } from "react-native";
+import { DevSettings, I18nManager } from "react-native";
 import { APP_PREFIX } from "@/config/constants";
 import ar from "./ar.json";
 import en from "./en.json";
@@ -25,6 +26,7 @@ export async function initI18n() {
         ? "ar"
         : "en";
 
+  // eslint-disable-next-line import/no-named-as-default-member
   i18n.use(initReactI18next).init({
     resources,
     lng: initialLang,
@@ -41,7 +43,7 @@ export async function initI18n() {
 
 export async function changeLanguage(lang: LanguageCode) {
   await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
-  await i18n.changeLanguage(lang);
+  await setI18nLanguage(lang);
 
   const shouldBeRTL = lang === "ar";
   I18nManager.allowRTL(shouldBeRTL);
@@ -50,10 +52,8 @@ export async function changeLanguage(lang: LanguageCode) {
   // Reload to apply RTL
   setTimeout(() => {
     if (__DEV__) {
-      const { DevSettings } = require("react-native");
       DevSettings.reload();
     } else {
-      const { Updates } = require("expo-updates");
       Updates.reloadAsync();
     }
   }, 100);

@@ -16,7 +16,7 @@ import {
 
 export default function CartScreen() {
   const { gs, plate } = useGlobalStyles();
-  const { items, removeItem, updateQuantity, clearCart } = useCart();
+  const { items, removeItem, updateQuantity } = useCart();
   const navigation = useNavigation();
 
   useFocusEffect(
@@ -34,7 +34,7 @@ export default function CartScreen() {
           });
         }
       };
-    }, [navigation, plate.backgroundSecond]),
+    }, [navigation, plate.backgroundSecond, plate.gray]),
   );
   const { t } = useTranslation();
   const { toSYP, formatSYP } = usePrice();
