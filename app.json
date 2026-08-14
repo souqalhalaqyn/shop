@@ -29,7 +29,7 @@
         "foregroundImage": "./assets/1024x1024.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.rawadag.barbersshop",
+      "package": "org.duckdns.souqalhlaqyn",
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
@@ -125,7 +125,7 @@
     "developmentClient": {
       "silentLaunch": false,
       "android": {
-        "package": "com.rawadag.barbersshop.debug"
+        "package": "org.duckdns.souqalhlaqyn.debug"
       },
       "ios": {
         "bundleIdentifier": "com.rawadag.barbersshop.debug"
