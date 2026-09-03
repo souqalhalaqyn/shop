@@ -2,7 +2,7 @@
   "expo": {
     "name": "Barber Shop",
     "slug": "souqalhalaqeen",
-    "version": "2.1.1",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/1024x1024.png",
     "scheme": "barbersshop",
